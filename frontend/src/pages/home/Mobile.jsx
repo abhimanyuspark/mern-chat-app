@@ -4,27 +4,33 @@ import Chat from "../../components/chat/Chat";
 import useBackButton from "../../hooks/useBackButton";
 
 const Mobile = () => {
-  const [id, setId] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const onClose = () => {
-    setId(null);
+    setConversationId(null);
   };
-  const { onBack } = useBackButton(id, onClose);
+  const { onBack } = useBackButton(conversationId, onClose);
 
   return (
     <div>
-      <div className="overflow-y-auto h-full">
-        <Contacts onId={setId} />
+      <div className="h-full overflow-y-auto">
+        <Contacts
+          onSelectConversation={setConversationId}
+          reloadKey={refreshKey}
+          selectedConversationId={conversationId}
+        />
       </div>
 
       <div
-        className={`bg-amber-600 flex-1 overflow-y-auto z-50 fixed top-0 ${id ? "left-0" : "left-full"} duration-100 size-full`}
+        className={`fixed top-0 z-50 flex-1 overflow-y-auto bg-amber-600 duration-100 ${conversationId ? "left-0" : "left-full"} size-full`}
       >
         <Chat
           onClose={() => {
             onClose();
             onBack();
           }}
-          id={id}
+          conversationId={conversationId}
+          onMessageSent={() => setRefreshKey((value) => value + 1)}
         />
       </div>
     </div>

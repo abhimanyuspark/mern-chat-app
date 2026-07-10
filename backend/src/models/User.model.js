@@ -21,29 +21,29 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    avatar: {
-      type: String,
-      default: "",
-    },
+    avatar: String,
 
     bio: {
       type: String,
       default: "",
     },
 
+    status: {
+      type: String,
+      enum: ["online", "offline", "away"],
+      default: "offline",
+    },
+
+    lastSeen: Date,
+
+    socketId: {
+      type: String,
+      default: null,
+    },
+
     refreshToken: {
       type: String,
       default: "",
-    },
-
-    isOnline: {
-      type: Boolean,
-      default: false,
-    },
-
-    lastSeen: {
-      type: Date,
-      default: Date.now,
     },
   },
   {

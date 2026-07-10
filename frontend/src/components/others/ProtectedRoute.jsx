@@ -6,7 +6,7 @@ export default function ProtectedRoute() {
   const { user, loading } = useSelector((state) => state.auth);
 
   if (loading) {
-    return <loading />;
+    return <Loading />;
   }
 
   if (!user) {
