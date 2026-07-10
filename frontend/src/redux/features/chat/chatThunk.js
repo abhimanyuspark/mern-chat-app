@@ -16,9 +16,11 @@ export const fetchConversations = createAsyncThunk(
 
 export const fetchUsers = createAsyncThunk(
   "chat/fetchUsers",
-  async (_, thunkAPI) => {
+  async (query = "", thunkAPI) => {
     try {
-      const res = await api.get("/users");
+      const res = await api.get("/users/search", {
+        params: { q: query },
+      });
       return res.data?.data || [];
     } catch (error) {
       return thunkAPI.rejectWithValue(getErrorMessage(error));
@@ -47,6 +49,18 @@ export const fetchMessages = createAsyncThunk(
         conversationId,
         messages: res.data?.data || [],
       };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const fetchConversationById = createAsyncThunk(
+  "chat/fetchConversationById",
+  async (conversationId, thunkAPI) => {
+    try {
+      const res = await api.get(`/conversations/${conversationId}`);
+      return res.data?.data || null;
     } catch (error) {
       return thunkAPI.rejectWithValue(getErrorMessage(error));
     }

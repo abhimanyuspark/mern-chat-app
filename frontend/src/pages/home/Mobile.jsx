@@ -1,37 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
 import Contacts from "../../components/chat/Contacts";
 import Chat from "../../components/chat/Chat";
+import { useDispatch, useSelector } from "react-redux";
 import useBackButton from "../../hooks/useBackButton";
+import { selectConversationId } from "../../redux/features/chat/chatSlice.js";
 
 const Mobile = () => {
-  const [conversationId, setConversationId] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const activeConversationId = useSelector(
+    (state) => state.chat.activeConversationId,
+  );
+  const dispatch = useDispatch();
   const onClose = () => {
-    setConversationId(null);
+    dispatch(selectConversationId(null));
   };
-  const { onBack } = useBackButton(conversationId, onClose);
+  useBackButton(activeConversationId, onClose);
 
   return (
     <div>
-      <div className="h-full overflow-y-auto">
-        <Contacts
-          onSelectConversation={setConversationId}
-          reloadKey={refreshKey}
-          selectedConversationId={conversationId}
-        />
+      <div className="h-full overflow-y-auto bg-base-300">
+        <Contacts />
       </div>
 
       <div
-        className={`fixed top-0 z-50 flex-1 overflow-y-auto bg-amber-600 duration-100 ${conversationId ? "left-0" : "left-full"} size-full`}
+        className={`fixed top-0 z-50 flex-1 overflow-y-auto duration-100 ${activeConversationId ? "left-0" : "left-full"} size-full`}
       >
-        <Chat
-          onClose={() => {
-            onClose();
-            onBack();
-          }}
-          conversationId={conversationId}
-          onMessageSent={() => setRefreshKey((value) => value + 1)}
-        />
+        <Chat />
       </div>
     </div>
   );

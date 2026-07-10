@@ -19,8 +19,8 @@ const Header = () => {
   };
 
   return (
-    <div className="border-b border-gray-300 flex items-center justify-between h-16 px-4">
-      <h2 className="text-gray-800">ChatApp</h2>
+    <div className="border-b border-base-200 flex items-center justify-between h-16 px-4">
+      <h2 className="">ChatApp</h2>
       <p
         className="cursor-pointer text-blue-600 hover:text-blue-800"
         onClick={handleLogout}
