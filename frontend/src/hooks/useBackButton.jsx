@@ -15,6 +15,12 @@ const useBackButton = (isOpen, onClose) => {
       window.removeEventListener("popstate", handlePopState);
     };
   }, [isOpen, onClose]);
+
+  const onBack = () => {
+    window.history.back();
+  };
+
+  return { onBack };
 };
 
 export default useBackButton;

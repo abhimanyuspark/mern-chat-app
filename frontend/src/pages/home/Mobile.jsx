@@ -5,9 +5,10 @@ import useBackButton from "../../hooks/useBackButton";
 
 const Mobile = () => {
   const [id, setId] = useState(null);
-  useBackButton(id, () => {
+  const onClose = () => {
     setId(null);
-  });
+  };
+  const { onBack } = useBackButton(id, onClose);
 
   return (
     <div>
@@ -20,7 +21,8 @@ const Mobile = () => {
       >
         <Chat
           onClose={() => {
-            setId(null);
+            onClose();
+            onBack();
           }}
           id={id}
         />
