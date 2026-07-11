@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import {
   fetchUsers,
   startConversation,
@@ -7,8 +8,9 @@ import {
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
 import { FiArrowLeft } from "react-icons/fi";
 
-const UserSearchPanel = ({ onClose, onBack }) => {
+const UserSearchPanel = ({ onClose }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { users, loadingUsers, error } = useSelector((state) => state.chat);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -23,8 +25,8 @@ const UserSearchPanel = ({ onClose, onBack }) => {
   const handleStartConversation = (receiver) => {
     dispatch(startConversation(receiver._id)).then((action) => {
       if (action.payload?._id) {
-        // onClose();
         dispatch(selectConversationId(action.payload._id));
+        navigate(`/chat/${action.payload._id}`);
       }
     });
   };
@@ -33,10 +35,7 @@ const UserSearchPanel = ({ onClose, onBack }) => {
     <div className="flex gap-2 flex-col">
       <div className="flex gap-2 items-start p-2">
         <button
-          onClick={() => {
-            // onClose();
-            // onBack();
-          }}
+          onClick={() => onClose?.()}
           className="rounded-full p-2 mt-1 text-gray-700 hover:bg-gray-100"
         >
           <FiArrowLeft />

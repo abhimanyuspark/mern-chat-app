@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
+import { useLocation, useNavigate } from "react-router";
 import UserSearchPanel from "../UserSearchPanel";
 import ConversationList from "../ConversationList";
-import useBackButton from "../../../hooks/useBackButton";
 import { FiSearch } from "react-icons/fi";
 
 const MobileContacts = () => {
-  const [searchPanel, setSearchPanel] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchPanel = location.pathname === "/search";
 
   const openSearchPanel = () => {
-    setSearchPanel(true);
+    navigate("/search");
   };
 
   const closeSearchPanel = () => {
-    setSearchPanel(false);
+    navigate("/");
   };
-
-  const { onBack } = useBackButton(searchPanel, closeSearchPanel);
 
   return (
     <div className="flex flex-col gap-3 border-r border-base-200">
@@ -30,9 +30,7 @@ const MobileContacts = () => {
           </div>
         </div>
       )}
-      {searchPanel && (
-        <UserSearchPanel onClose={closeSearchPanel} onBack={onBack} />
-      )}
+      {searchPanel && <UserSearchPanel onClose={closeSearchPanel} />}
       {!searchPanel && <ConversationList />}
     </div>
   );

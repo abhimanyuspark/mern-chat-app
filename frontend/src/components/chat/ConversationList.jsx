@@ -1,9 +1,11 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
 
 const ConversationList = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { conversations, loadingConversations, error, activeConversationId } =
     useSelector((state) => state.chat);
@@ -28,7 +30,10 @@ const ConversationList = () => {
             return (
               <button
                 key={conversation._id}
-                onClick={() => dispatch(selectConversationId(conversation._id))}
+                onClick={() => {
+                  dispatch(selectConversationId(conversation._id));
+                  navigate(`/chat/${conversation._id}`);
+                }}
                 className={`px-3 py-2 text-left transition cursor-pointer ${
                   activeConversationId === conversation._id
                     ? "bg-base-100"

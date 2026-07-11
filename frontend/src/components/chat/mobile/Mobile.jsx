@@ -1,19 +1,12 @@
 import React from "react";
 import Contacts from "../Contacts.jsx";
 import Chat from "../Chat.jsx";
-import { useDispatch, useSelector } from "react-redux";
-import useBackButton from "../../../hooks/useBackButton.jsx";
-import { selectConversationId } from "../../../redux/features/chat/chatSlice.js";
+import { useSelector } from "react-redux";
 
 const Mobile = () => {
   const activeConversationId = useSelector(
     (state) => state.chat.activeConversationId,
   );
-  const dispatch = useDispatch();
-  const onClose = () => {
-    dispatch(selectConversationId(null));
-  };
-  useBackButton(activeConversationId, onClose);
 
   return (
     <div className="h-full w-full">

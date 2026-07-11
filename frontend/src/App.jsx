@@ -30,6 +30,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/chat/:conversationId" element={<Home />} />
+            <Route path="/search" element={<Home />} />
           </Route>
         </Route>
       </Routes>

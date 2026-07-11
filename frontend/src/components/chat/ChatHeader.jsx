@@ -1,17 +1,17 @@
 import React, { useEffect } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
 import { fetchConversationById } from "../../redux/features/chat/chatThunk";
-import useBackButton from "../../hooks/useBackButton";
 
 const ChatHeader = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { activeConversationId, activeConversation } = useSelector(
     (state) => state.chat,
   );
-  const { onBack } = useBackButton();
 
   useEffect(() => {
     if (!activeConversationId) return;
@@ -28,7 +28,7 @@ const ChatHeader = () => {
       <button
         onClick={() => {
           dispatch(selectConversationId(null));
-          onBack();
+          navigate("/");
         }}
         className="rounded-full p-2 text-gray-700 hover:bg-gray-100"
       >

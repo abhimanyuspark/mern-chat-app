@@ -1,0 +1,6 @@
+{
+  "appId": "com.mernchat.app",
+  "appName": "MERN Chat App",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

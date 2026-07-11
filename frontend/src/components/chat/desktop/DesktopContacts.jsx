@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
+import { useLocation, useNavigate } from "react-router";
 import UserSearchPanel from "../UserSearchPanel";
 import ConversationList from "../ConversationList";
 import { FiSearch } from "react-icons/fi";
 
 const DesktopContacts = () => {
-  const [searchPanel, setSearchPanel] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchPanel = location.pathname === "/search";
 
   const openSearchPanel = () => {
-    setSearchPanel(!searchPanel);
+    navigate(searchPanel ? "/" : "/search");
   };
 
   return (
