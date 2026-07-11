@@ -28,7 +28,7 @@ const ChatHeader = () => {
       <button
         onClick={() => {
           dispatch(selectConversationId(null));
-          navigate("/");
+          navigate("/", { replace: true });
         }}
         className="rounded-full p-2 text-gray-700 hover:bg-gray-100"
       >
