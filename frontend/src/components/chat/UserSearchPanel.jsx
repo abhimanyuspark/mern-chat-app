@@ -5,8 +5,9 @@ import {
   startConversation,
 } from "../../redux/features/chat/chatThunk";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
+import { FiArrowLeft } from "react-icons/fi";
 
-const UserSearchPanel = () => {
+const UserSearchPanel = ({ onClose, onBack }) => {
   const dispatch = useDispatch();
   const { users, loadingUsers, error } = useSelector((state) => state.chat);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,46 +23,57 @@ const UserSearchPanel = () => {
   const handleStartConversation = (receiver) => {
     dispatch(startConversation(receiver._id)).then((action) => {
       if (action.payload?._id) {
+        // onClose();
         dispatch(selectConversationId(action.payload._id));
       }
     });
   };
 
   return (
-    <div>
-      <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
-        Start a chat
-      </h3>
-      <div className="flex flex-col gap-2">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search users by name or email"
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-amber-600"
-        />
+    <div className="flex gap-2 flex-col">
+      <div className="flex gap-2 items-start p-2">
+        <button
+          onClick={() => {
+            // onClose();
+            // onBack();
+          }}
+          className="rounded-full p-2 mt-1 text-gray-700 hover:bg-gray-100"
+        >
+          <FiArrowLeft />
+        </button>
 
-        {loadingUsers ? (
-          <p className="text-sm text-gray-600">Searching users...</p>
-        ) : error ? (
-          <p className="text-sm text-red-600">{error}</p>
-        ) : users.length === 0 ? (
-          <p className="text-sm text-gray-600">
-            {searchTerm.trim()
-              ? "No users found."
-              : "Type a name or email to search users."}
-          </p>
-        ) : (
-          users.map((person) => (
-            <button
-              key={person._id}
-              onClick={() => handleStartConversation(person)}
-              className="rounded-lg bg-amber-700 px-3 py-2 text-left text-sm text-white transition hover:bg-amber-800"
-            >
-              {person.name || person.email}
-            </button>
-          ))
-        )}
+        <div className="flex-1 flex flex-col gap-2">
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search users by name or email"
+            className="input input-primary w-full"
+          />
+          {loadingUsers && (
+            <p className="text-sm text-gray-600">Searching users...</p>
+          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          {users.length === 0 && (
+            <p className="text-sm text-gray-600">
+              {searchTerm.trim()
+                ? "No users found."
+                : "Type a name or email to search users."}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {users.map((person) => (
+          <button
+            key={person._id}
+            onClick={() => handleStartConversation(person)}
+            className="text-left px-3 py-3 hover:bg-base-200 bg-base-100 cursor-pointer"
+          >
+            {person.name}
+          </button>
+        ))}
       </div>
     </div>
   );

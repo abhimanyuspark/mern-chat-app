@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Empty from "./Empty";
+import Empty from "./desktop/Empty";
 import { fetchMessages } from "../../redux/features/chat/chatThunk";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageComposer from "./MessageComposer";
+import useDeviceType from "../../hooks/useDeviceType";
 
 const Chat = () => {
   const dispatch = useDispatch();
@@ -12,6 +13,7 @@ const Chat = () => {
   const { messages, loadingMessages, error, activeConversationId } =
     useSelector((state) => state.chat);
   const bottomRef = useRef(null);
+  const { isDesktop } = useDeviceType();
 
   useEffect(() => {
     if (!activeConversationId) return;
@@ -22,7 +24,7 @@ const Chat = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeConversationId]);
 
-  if (!activeConversationId) {
+  if (isDesktop && !activeConversationId) {
     return <Empty />;
   }
 

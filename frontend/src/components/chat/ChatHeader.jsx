@@ -21,7 +21,7 @@ const ChatHeader = () => {
   const participant = activeConversation?.participants?.find(
     (person) => person._id !== user?._id,
   );
-  const chatTitle = participant?.name || participant?.email || "Conversation";
+  const chatTitle = participant?.name || "Conversation";
 
   return (
     <div className="flex items-center gap-4 border-b border-base-200 bg-base-300 p-3">

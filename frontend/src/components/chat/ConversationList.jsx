@@ -10,9 +10,7 @@ const ConversationList = () => {
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
-        Chats
-      </h3>
+      <h3 className="mb-2 text-sm font-semibold tracking-wide">Chats</h3>
       {loadingConversations ? (
         <p className="text-sm text-gray-600">Loading conversations...</p>
       ) : error ? (
@@ -31,9 +29,9 @@ const ConversationList = () => {
               <button
                 key={conversation._id}
                 onClick={() => dispatch(selectConversationId(conversation._id))}
-                className={`rounded-lg px-3 py-2 text-left transition ${
+                className={`px-3 py-2 text-left transition cursor-pointer ${
                   activeConversationId === conversation._id
-                    ? "bg-secondary hover:bg-secondary/50"
+                    ? "bg-base-100"
                     : "bg-base-100 hover:bg-base-200"
                 }`}
               >
