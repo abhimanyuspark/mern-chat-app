@@ -26,7 +26,7 @@ const BackButtonProvider = ({ children }) => {
     });
 
     return () => {
-      handler.then((remove) => remove());
+      handler.then((remove) => remove.remove());
     };
   }, [location.pathname, navigate]);
 

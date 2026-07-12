@@ -44,6 +44,7 @@ const UserSearchPanel = ({ onClose }) => {
         <div className="flex-1 flex flex-col gap-2">
           <input
             type="search"
+            autoFocus="true"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Search users by name or email"

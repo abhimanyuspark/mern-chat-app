@@ -3,15 +3,18 @@ import dotenv from "dotenv";
 dotenv.config({ quiet: true });
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { createServer } from "http";
 import connectDB from "./config/connectDB.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import conversationRoutes from "./routes/conversation.route.js";
 import messageRoutes from "./routes/message.route.js";
 import errorHandler from "./middleware/error.middleware.js";
+import { initSocket } from "./sockets/socket.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const server = createServer(app);
 
 app.use(
   cors({
@@ -36,7 +39,9 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  initSocket(server);
+
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 });
