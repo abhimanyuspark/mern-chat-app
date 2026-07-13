@@ -10,6 +10,8 @@ const ConversationList = () => {
   const { conversations, loadingConversations, error, activeConversationId } =
     useSelector((state) => state.chat);
 
+  const onlineUsers = useSelector((state) => state.socket.onlineUsers);
+
   return (
     <div>
       <h3 className="mb-2 text-sm font-semibold tracking-wide">Chats</h3>
@@ -22,9 +24,11 @@ const ConversationList = () => {
       ) : (
         <div className="flex flex-col gap-2">
           {conversations.map((conversation) => {
-            const participant = conversation.participants?.find(
-              (item) => item._id !== user?._id,
-            );
+            let isOnline;
+            const participant = conversation.participants?.find((item) => {
+              isOnline = onlineUsers.includes(item._id);
+              return item._id !== user?._id;
+            });
             const preview = conversation.lastMessage?.text || "Start chatting";
 
             return (
@@ -41,7 +45,12 @@ const ConversationList = () => {
                 }`}
               >
                 <div className="font-semibold">
-                  {participant?.name || "Conversation"}
+                  {participant?.name || "Conversation"}{" "}
+                  {isOnline ? (
+                    <span className="text-green-500">Online</span>
+                  ) : (
+                    <span className="text-gray-400">Offline</span>
+                  )}
                 </div>
                 <div className="truncate text-sm opacity-80">{preview}</div>
               </button>

@@ -26,21 +26,15 @@ function initSocket(server) {
 
     io.emit("online-users", getOnlineUsers());
 
-    // socket.on("joinRoom", (roomId) => {
-    //   socket.join(roomId);
-    // });
+    socket.on("join-conversation", (conversationId) => {
+      socket.join(conversationId);
 
-    // socket.on("sendMessage", ({ roomId, message, sender }) => {
-    //   io.to(roomId).emit("receiveMessage", { message, sender });
-    // });
+      console.log(`${socket.user.name} joined ${conversationId}`);
+    });
 
-    // socket.on("typing", ({ roomId, userId }) => {
-    //   socket.to(roomId).emit("typing", { userId });
-    // });
-
-    // socket.on("stopTyping", ({ roomId, userId }) => {
-    //   socket.to(roomId).emit("stopTyping", { userId });
-    // });
+    socket.on("leave-conversation", (conversationId) => {
+      socket.leave(conversationId);
+    });
 
     socket.on("disconnect", () => {
       console.log(`Socket disconnected: ${socket.id}`);

@@ -28,6 +28,22 @@ const chatSlice = createSlice({
     clearChatError: (state) => {
       state.error = null;
     },
+    addMessage: (state, action) => {
+      const { conversation } = action.payload;
+      const existing = state.messages[conversation] || [];
+      state.messages[conversation] = [...existing, action.payload];
+
+      const conversationIndex = state.conversations.findIndex(
+        (item) => item._id === conversation,
+      );
+
+      if (conversationIndex !== -1) {
+        state.conversations[conversationIndex] = {
+          ...state.conversations[conversationIndex],
+          lastMessage: action.payload,
+        };
+      }
+    },
     selectConversationId: (state, action) => {
       state.activeConversationId = action.payload;
     },
@@ -105,20 +121,6 @@ const chatSlice = createSlice({
       })
       .addCase(sendMessage.fulfilled, (state, action) => {
         state.sendingMessage = false;
-        const { conversationId, message } = action.payload;
-        const existing = state.messages[conversationId] || [];
-        state.messages[conversationId] = [...existing, message];
-
-        const conversationIndex = state.conversations.findIndex(
-          (item) => item._id === conversationId,
-        );
-
-        if (conversationIndex !== -1) {
-          state.conversations[conversationIndex] = {
-            ...state.conversations[conversationIndex],
-            lastMessage: message,
-          };
-        }
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.sendingMessage = false;
@@ -127,5 +129,6 @@ const chatSlice = createSlice({
   },
 });
 
-export const { clearChatError, selectConversationId } = chatSlice.actions;
+export const { clearChatError, selectConversationId, addMessage } =
+  chatSlice.actions;
 export default chatSlice.reducer;

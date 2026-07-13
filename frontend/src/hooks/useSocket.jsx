@@ -1,7 +1,11 @@
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import socket from "../socket/socket";
+import { setOnlineUsers } from "../redux/features/socket/socketSlice";
 
 const useSocket = (user) => {
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (!user) return;
 
@@ -11,16 +15,28 @@ const useSocket = (user) => {
       token,
     };
 
-    socket.on("connect_error", (error) => {
-      console.log(error.message);
-    });
-
     socket.connect();
 
+    socket.on("connect", () => {
+      console.log("Connected:", socket.id);
+    });
+
+    socket.on("online-users", (users) => {
+      dispatch(setOnlineUsers(users));
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected");
+    });
+
     return () => {
+      socket.off("connect");
+      socket.off("online-users");
+      socket.off("disconnect");
+
       socket.disconnect();
     };
-  }, [user]);
+  }, [user, dispatch]);
 };
 
 export default useSocket;

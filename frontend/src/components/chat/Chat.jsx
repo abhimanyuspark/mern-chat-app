@@ -6,6 +6,8 @@ import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageComposer from "./MessageComposer";
 import useDeviceType from "../../hooks/useDeviceType";
+import socket from "../../socket/socket";
+import { addMessage } from "../../redux/features/chat/chatSlice";
 
 const Chat = () => {
   const dispatch = useDispatch();
@@ -19,6 +21,26 @@ const Chat = () => {
     if (!activeConversationId) return;
     dispatch(fetchMessages(activeConversationId));
   }, [activeConversationId, dispatch]);
+
+  useEffect(() => {
+    if (!activeConversationId) return;
+
+    socket.emit("join-conversation", activeConversationId);
+
+    return () => {
+      socket.emit("leave-conversation", activeConversationId);
+    };
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    socket.on("receive-message", (message) => {
+      dispatch(addMessage(message));
+    });
+
+    return () => {
+      socket.off("receive-message");
+    };
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

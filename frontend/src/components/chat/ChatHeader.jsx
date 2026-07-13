@@ -13,14 +13,20 @@ const ChatHeader = () => {
     (state) => state.chat,
   );
 
+  const onlineUsers = useSelector((state) => state.socket.onlineUsers);
+
+  let isOnline;
+
   useEffect(() => {
     if (!activeConversationId) return;
     dispatch(fetchConversationById(activeConversationId));
   }, [activeConversationId, dispatch]);
 
-  const participant = activeConversation?.participants?.find(
-    (person) => person._id !== user?._id,
-  );
+  const participant = activeConversation?.participants?.find((item) => {
+    isOnline = onlineUsers.includes(item._id);
+    return item._id !== user?._id;
+  });
+
   const chatTitle = participant?.name || "Conversation";
 
   return (
@@ -36,7 +42,11 @@ const ChatHeader = () => {
       </button>
       <div>
         <h3 className="font-semibold">{chatTitle}</h3>
-        <p className="text-sm">Active chat</p>
+        {isOnline ? (
+          <span className="text-green-500">Online</span>
+        ) : (
+          <span className="text-gray-400">Offline</span>
+        )}
       </div>
     </div>
   );

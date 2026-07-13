@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import { getIo } from "../sockets/socket.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -43,6 +44,10 @@ export const sendMessage = asyncHandler(async (req, res) => {
     "sender",
     "name avatar",
   );
+
+  const io = getIo();
+
+  io.to(conversationId).emit("receive-message", populatedMessage);
 
   return res
     .status(201)
