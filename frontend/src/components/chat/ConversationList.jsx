@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { selectConversationId } from "../../redux/features/chat/chatSlice";
+import {
+  selectConversationId,
+  updateConversation,
+} from "../../redux/features/chat/chatSlice";
+import socket from "../../socket/socket";
 
 const ConversationList = () => {
   const dispatch = useDispatch();
@@ -9,6 +13,16 @@ const ConversationList = () => {
   const { user } = useSelector((state) => state.auth);
   const { conversations, loadingConversations, error, activeConversationId } =
     useSelector((state) => state.chat);
+
+  useEffect(() => {
+    socket.on("conversation-updated", (data) => {
+      dispatch(updateConversation(data));
+    });
+
+    return () => {
+      socket.off("conversation-updated");
+    };
+  }, [dispatch]);
 
   const onlineUsers = useSelector((state) => state.socket.onlineUsers);
 

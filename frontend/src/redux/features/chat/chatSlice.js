@@ -44,6 +44,21 @@ const chatSlice = createSlice({
         };
       }
     },
+    updateConversation: (state, action) => {
+      const { conversationId, lastMessage } = action.payload;
+
+      const index = state.conversations.findIndex(
+        (conversation) => conversation._id === conversationId,
+      );
+
+      if (index === -1) return;
+
+      state.conversations[index].lastMessage = lastMessage;
+
+      // Move updated conversation to the top
+      const updatedConversation = state.conversations.splice(index, 1)[0];
+      state.conversations.unshift(updatedConversation);
+    },
     selectConversationId: (state, action) => {
       state.activeConversationId = action.payload;
     },
@@ -129,6 +144,10 @@ const chatSlice = createSlice({
   },
 });
 
-export const { clearChatError, selectConversationId, addMessage } =
-  chatSlice.actions;
+export const {
+  clearChatError,
+  selectConversationId,
+  addMessage,
+  updateConversation,
+} = chatSlice.actions;
 export default chatSlice.reducer;

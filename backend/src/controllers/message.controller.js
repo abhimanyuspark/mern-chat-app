@@ -1,6 +1,7 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import { getIo } from "../sockets/socket.js";
+import { getSocketId } from "../sockets/socketManager.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -48,6 +49,20 @@ export const sendMessage = asyncHandler(async (req, res) => {
   const io = getIo();
 
   io.to(conversationId).emit("receive-message", populatedMessage);
+
+  const participants = conversation.participants;
+
+  participants.forEach((userId) => {
+    const socketId = getSocketId(userId);
+
+    if (!socketId) return;
+
+    io.to(socketId).emit("conversation-updated", {
+      conversationId: conversation._id,
+
+      lastMessage: populatedMessage,
+    });
+  });
 
   return res
     .status(201)
