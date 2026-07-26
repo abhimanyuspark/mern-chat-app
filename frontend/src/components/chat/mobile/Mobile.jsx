@@ -15,7 +15,7 @@ const Mobile = () => {
       </div>
 
       <div
-        className={`fixed top-0 z-50 duration-300 ${activeConversationId ? "left-0" : "left-full"} size-full`}
+        className={`fixed inset-0 z-50 transition-all duration-300 ${activeConversationId ? "left-0" : "left-full"}`}
       >
         <Chat />
       </div>

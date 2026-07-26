@@ -27,7 +27,7 @@ const MessageComposer = () => {
   return (
     <form
       onSubmit={onSubmit}
-      className="sticky bottom-0 z-50 flex gap-2 border-t border-base-300 bg-base-100/95 p-3 backdrop-blur"
+      className="flex gap-2 border-t border-base-300 bg-base-100 p-3"
     >
       <input
         value={text}
