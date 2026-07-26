@@ -30,23 +30,28 @@ const ChatHeader = () => {
   const chatTitle = participant?.name || "Conversation";
 
   return (
-    <div className="flex items-center gap-4 border-b border-base-200 bg-base-300 p-2">
+    <div className="flex items-center gap-3 border-b border-base-200 bg-base-300 p-3">
       <button
         onClick={() => {
           dispatch(selectConversationId(null));
           navigate(-1, { replace: true });
         }}
-        className="rounded-full p-2 text-gray-700 hover:bg-gray-100"
+        className="btn btn-ghost btn-circle btn-sm md:hidden"
       >
-        <FiArrowLeft />
+        <FiArrowLeft className="text-xl" />
       </button>
-      <div>
-        <h3 className="font-semibold">{chatTitle}</h3>
-        {isOnline ? (
-          <span className="text-green-500">Online</span>
-        ) : (
-          <span className="text-gray-400">Offline</span>
-        )}
+
+      <div className={`avatar ${isOnline ? "online" : "offline"}`}>
+        <div className="bg-neutral text-neutral-content flex items-center justify-center rounded-full p-4">
+          <span>{chatTitle.charAt(0)}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col">
+        <h3 className="font-bold text-sm leading-tight">{chatTitle}</h3>
+        <span className={`text-[10px] font-medium ${isOnline ? "text-success" : "text-base-content/50"}`}>
+          {isOnline ? "Online" : "Offline"}
+        </span>
       </div>
     </div>
   );

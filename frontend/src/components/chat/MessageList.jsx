@@ -1,8 +1,9 @@
 import React from "react";
+import { MessageSkeleton } from "./ChatSkeletons";
 
 const MessageList = ({ messages, loadingMessages, error, user, bottomRef }) => {
-  if (loadingMessages) {
-    return <p className="text-sm text-gray-600">Loading messages...</p>;
+  if (!loadingMessages) {
+    return <MessageSkeleton />;
   }
 
   if (error) {

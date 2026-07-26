@@ -7,6 +7,8 @@ import {
 } from "../../redux/features/chat/chatSlice";
 import socket from "../../socket/socket";
 
+import { ConversationSkeleton } from "./ChatSkeletons";
+
 const ConversationList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,15 +29,15 @@ const ConversationList = () => {
   const onlineUsers = useSelector((state) => state.socket.onlineUsers);
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto">
       {loadingConversations ? (
-        <p className="text-sm text-gray-600">Loading conversations...</p>
+        <ConversationSkeleton />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : conversations.length === 0 ? (
         <p className="text-sm text-gray-600">No conversations yet.</p>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col">
           {conversations.map((conversation) => {
             let isOnline;
             const participant = conversation.participants?.find((item) => {
@@ -51,21 +53,30 @@ const ConversationList = () => {
                   dispatch(selectConversationId(conversation._id));
                   navigate(`/chat/${conversation._id}`);
                 }}
-                className={`px-3 py-2 text-left transition cursor-pointer ${
+                className={`flex items-center gap-3 px-4 py-2 text-left transition cursor-pointer border-b border-base-200/50 ${
                   activeConversationId === conversation._id
-                    ? "bg-base-100"
+                    ? "bg-base-200"
                     : "bg-base-100 hover:bg-base-200"
                 }`}
               >
-                <div className="font-semibold">
-                  {participant?.name || "Conversation"}{" "}
-                  {isOnline ? (
-                    <span className="text-green-500">Online</span>
-                  ) : (
-                    <span className="text-gray-400">Offline</span>
-                  )}
+                <div className={`avatar ${isOnline ? "online" : "offline"}`}>
+                  <div className="bg-neutral text-neutral-content rounded-full p-4 flex items-center justify-center">
+                    <span className="text-lg">
+                      {participant?.name?.charAt(0) || "C"}
+                    </span>
+                  </div>
                 </div>
-                <div className="truncate text-sm opacity-80">{preview}</div>
+
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex justify-between items-baseline">
+                    <h4 className="font-bold truncate text-base">
+                      {participant?.name || "Conversation"}
+                    </h4>
+                  </div>
+                  <p className="truncate text-sm opacity-60">
+                    {preview}
+                  </p>
+                </div>
               </button>
             );
           })}

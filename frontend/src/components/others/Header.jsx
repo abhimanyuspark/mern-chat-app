@@ -20,16 +20,36 @@ const Header = () => {
   };
 
   return (
-    <div className="border-b border-base-200 flex items-center justify-between h-16 px-4">
-      <h2 className="">ChatApp</h2>
-      <div>
-        <p>{user?.name}</p>
-        <p
-          className="cursor-pointer text-blue-600 hover:text-blue-800"
-          onClick={handleLogout}
-        >
-          Logout
-        </p>
+    <div className="navbar bg-base-100 border-b border-base-200 h-16 px-4">
+      <div className="flex-1">
+        <h1 className="text-xl font-bold text-primary tracking-tight">ChatApp</h1>
+      </div>
+      <div className="flex-none gap-2">
+        <div className="dropdown dropdown-end">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-circle avatar placeholder"
+          >
+            <div className="bg-neutral text-neutral-content rounded-full p-4 flex items-center justify-center">
+              <span>{user?.name?.charAt(0)}</span>
+            </div>
+          </div>
+          <ul
+            tabIndex={0}
+            className="mt-3 z-100 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-base-200"
+          >
+            <li className="menu-title px-4 py-2 opacity-60">
+              Hello, {user?.name}
+            </li>
+            <div className="divider my-0"></div>
+            <li>
+              <button onClick={handleLogout} className="text-error">
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );
