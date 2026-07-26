@@ -5,7 +5,7 @@ import Chat from "../Chat";
 const Desktop = () => {
   return (
     <div className="flex h-full w-full">
-      <div className="h-full w-xs shrink-0 overflow-y-auto bg-base-300">
+      <div className="h-full w-xs shrink-0 overflow-y-scroll bg-base-300">
         <Contacts />
       </div>
 

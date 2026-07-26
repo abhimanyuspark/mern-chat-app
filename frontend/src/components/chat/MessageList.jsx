@@ -2,7 +2,7 @@ import React from "react";
 import { MessageSkeleton } from "./ChatSkeletons";
 
 const MessageList = ({ messages, loadingMessages, error, user, bottomRef }) => {
-  if (!loadingMessages) {
+  if (loadingMessages) {
     return <MessageSkeleton />;
   }
 
