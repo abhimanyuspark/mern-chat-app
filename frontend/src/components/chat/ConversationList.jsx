@@ -28,7 +28,6 @@ const ConversationList = () => {
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold tracking-wide">Chats</h3>
       {loadingConversations ? (
         <p className="text-sm text-gray-600">Loading conversations...</p>
       ) : error ? (

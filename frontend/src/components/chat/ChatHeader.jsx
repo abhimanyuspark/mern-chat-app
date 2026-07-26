@@ -30,7 +30,7 @@ const ChatHeader = () => {
   const chatTitle = participant?.name || "Conversation";
 
   return (
-    <div className="flex items-center gap-4 border-b border-base-200 bg-base-300 p-3">
+    <div className="flex items-center gap-4 border-b border-base-200 bg-base-300 p-2">
       <button
         onClick={() => {
           dispatch(selectConversationId(null));

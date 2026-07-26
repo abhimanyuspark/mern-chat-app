@@ -21,12 +21,12 @@ const Contacts = () => {
   }, [dispatch]);
 
   return (
-    <div className="flex flex-col gap-3 border-r border-base-200">
+    <div className="flex flex-col border-r border-base-200">
       {!searchPanel && (
-        <div className="p-2">
+        <div className="px-2 py-3">
           <div
             onClick={openSearchPanel}
-            className="input input-neutral w-full flex gap-2 p-2"
+            className="input input-neutral w-full flex gap-2 p-5.5 items-center cursor-pointer"
           >
             <FiSearch />
             <p>Search here...</p>
