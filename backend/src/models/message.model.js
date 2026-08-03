@@ -48,6 +48,11 @@ const messageSchema = new mongoose.Schema(
       default: false,
     },
 
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
     deletedFor: [
       {
         type: mongoose.Schema.Types.ObjectId,

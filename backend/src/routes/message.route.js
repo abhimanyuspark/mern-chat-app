@@ -14,6 +14,6 @@ router.post("/", sendMessage);
 
 router.get("/:conversationId", getMessages);
 
-router.delete("/:id", deleteMessage);
+router.delete(["/:id", "/"], deleteMessage);
 
 export default router;

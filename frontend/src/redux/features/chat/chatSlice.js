@@ -6,6 +6,7 @@ import {
   fetchMessages,
   sendMessage,
   fetchConversationById,
+  deleteMessages,
 } from "./chatThunk";
 
 const initialState = {
@@ -14,6 +15,7 @@ const initialState = {
   messages: {},
   activeConversationId: null,
   activeConversation: null,
+  replyingTo: null,
   loadingConversations: false,
   loadingUsers: false,
   loadingMessages: false,
@@ -61,6 +63,53 @@ const chatSlice = createSlice({
     },
     selectConversationId: (state, action) => {
       state.activeConversationId = action.payload;
+    },
+    setReplyingTo: (state, action) => {
+      state.replyingTo = action.payload;
+    },
+    markMessageDeleted: (state, action) => {
+      const { messageId, conversationId, isDeletedForEveryone, text } =
+        action.payload;
+
+      if (isDeletedForEveryone) {
+        if (state.messages[conversationId]) {
+          const message = state.messages[conversationId].find(
+            (m) => m._id === messageId,
+          );
+          if (message) {
+            message.isDeleted = true;
+            message.text = text || "This message was deleted";
+          }
+        }
+      } else {
+        if (state.messages[conversationId]) {
+          state.messages[conversationId] = state.messages[
+            conversationId
+          ].filter((m) => m._id !== messageId);
+        }
+      }
+    },
+    removeMessages: (state, action) => {
+      const { conversationId, deletedIds = [] } = action.payload;
+
+      if (!conversationId) return;
+
+      const conversationMessages = state.messages[conversationId] || [];
+      state.messages[conversationId] = conversationMessages.filter(
+        (message) => !deletedIds.includes(message._id),
+      );
+
+      const conversation = state.conversations.find(
+        (item) => item._id === conversationId,
+      );
+
+      if (conversation) {
+        const remainingMessages = state.messages[conversationId] || [];
+        conversation.lastMessage =
+          remainingMessages.length > 0
+            ? remainingMessages[remainingMessages.length - 1]
+            : null;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -140,6 +189,29 @@ const chatSlice = createSlice({
       .addCase(sendMessage.rejected, (state, action) => {
         state.sendingMessage = false;
         state.error = action.payload;
+      })
+
+      .addCase(deleteMessages.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(deleteMessages.fulfilled, (state, action) => {
+        const { mode, deletedIds, conversationId } = action.payload;
+        if (mode === "everyone") {
+          deletedIds.forEach((id) => {
+            chatSlice.caseReducers.markMessageDeleted(state, {
+              payload: {
+                messageId: id,
+                conversationId,
+                isDeletedForEveryone: true,
+              },
+            });
+          });
+        } else {
+          chatSlice.caseReducers.removeMessages(state, action);
+        }
+      })
+      .addCase(deleteMessages.rejected, (state, action) => {
+        state.error = action.payload;
       });
   },
 });
@@ -149,5 +221,8 @@ export const {
   selectConversationId,
   addMessage,
   updateConversation,
+  removeMessages,
+  markMessageDeleted,
+  setReplyingTo,
 } = chatSlice.actions;
 export default chatSlice.reducer;

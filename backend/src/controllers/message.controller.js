@@ -7,7 +7,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { conversationId, text } = req.body;
+  const { conversationId, text, replyTo } = req.body;
 
   if (!conversationId) {
     throw new ApiError(400, "Conversation ID is required");
@@ -36,15 +36,18 @@ export const sendMessage = asyncHandler(async (req, res) => {
     sender: req.user._id,
     text: text.trim(),
     seenBy: [req.user._id],
+    replyTo: replyTo || null,
   });
 
   conversation.lastMessage = message._id;
   await conversation.save();
 
-  const populatedMessage = await Message.findById(message._id).populate(
-    "sender",
-    "name avatar",
-  );
+  const populatedMessage = await Message.findById(message._id)
+    .populate("sender", "name avatar")
+    .populate({
+      path: "replyTo",
+      populate: { path: "sender", select: "name" },
+    });
 
   const io = getIo();
 
@@ -79,32 +82,114 @@ export const getMessages = asyncHandler(async (req, res) => {
     conversation: conversationId,
   })
     .populate("sender", "name avatar")
-    .populate("replyTo")
+    .populate({
+      path: "replyTo",
+      populate: { path: "sender", select: "name" },
+    })
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
 
+  const visibleMessages = messages.filter(
+    (message) =>
+      !message.deletedFor?.some(
+        (id) => id.toString() === req.user._id.toString(),
+      ),
+  );
+
   return res
     .status(200)
     .json(
-      new ApiResponse(200, messages.reverse(), "Messages fetched successfully"),
+      new ApiResponse(
+        200,
+        visibleMessages.reverse(),
+        "Messages fetched successfully",
+      ),
     );
 });
 
 export const deleteMessage = asyncHandler(async (req, res) => {
-  const message = await Message.findById(req.params.id);
+  const rawIds = req.body.ids ?? req.query.ids ?? req.params.id;
+  const mode = req.body.mode ?? req.query.mode ?? "me";
 
-  if (!message) {
-    throw new ApiError(404, "Message not found");
+  const ids = Array.isArray(rawIds)
+    ? rawIds
+    : typeof rawIds === "string"
+      ? rawIds
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : [];
+
+  if (ids.length === 0) {
+    throw new ApiError(400, "Message ID(s) are required");
   }
 
-  if (message.sender.toString() !== req.user._id.toString()) {
-    throw new ApiError(403, "You can only delete your own messages");
+  const messages = await Message.find({ _id: { $in: ids } });
+
+  if (messages.length !== ids.length) {
+    throw new ApiError(404, "One or more messages not found");
   }
 
-  await message.deleteOne();
+  if (mode === "everyone") {
+    const unauthorizedMessages = messages.filter(
+      (message) => message.sender.toString() !== req.user._id.toString(),
+    );
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, null, "Message deleted successfully"));
+    if (unauthorizedMessages.length > 0) {
+      throw new ApiError(
+        403,
+        "You can only delete your own messages for everyone",
+      );
+    }
+  }
+
+  const io = getIo();
+
+  for (const message of messages) {
+    const currentUserId = req.user._id.toString();
+
+    if (mode === "everyone") {
+      message.isDeleted = true;
+      message.text = "This message was deleted";
+      message.image = "";
+      message.file = "";
+      await message.save();
+
+      io.to(message.conversation.toString()).emit("message-deleted", {
+        messageId: message._id,
+        conversationId: message.conversation,
+        isDeletedForEveryone: true,
+        text: "This message was deleted",
+      });
+    } else {
+      const currentDeletedFor =
+        message.deletedFor?.map((id) => id.toString()) || [];
+      if (!currentDeletedFor.includes(currentUserId)) {
+        currentDeletedFor.push(currentUserId);
+      }
+      message.deletedFor = currentDeletedFor;
+      await message.save();
+
+      // Notify only the user who deleted for themselves (to update their UI if they have multiple tabs/devices)
+      const socketId = getSocketId(currentUserId);
+      if (socketId) {
+        io.to(socketId).emit("message-deleted", {
+          messageId: message._id,
+          conversationId: message.conversation,
+          isDeletedForEveryone: false,
+        });
+      }
+    }
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { deletedIds: ids, mode },
+      messages.length > 1
+        ? "Messages deleted successfully"
+        : "Message deleted successfully",
+    ),
+  );
 });

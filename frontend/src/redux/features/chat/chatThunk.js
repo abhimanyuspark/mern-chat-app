@@ -69,15 +69,34 @@ export const fetchConversationById = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   "chat/sendMessage",
-  async ({ conversationId, text }, thunkAPI) => {
+  async ({ conversationId, text, replyTo }, thunkAPI) => {
     try {
       const res = await api.post("/messages", {
         conversationId,
         text,
+        replyTo,
       });
       return {
         conversationId,
         message: res.data?.data,
+      };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const deleteMessages = createAsyncThunk(
+  "chat/deleteMessages",
+  async ({ conversationId, ids, mode = "me" }, thunkAPI) => {
+    try {
+      const res = await api.delete("/messages", {
+        data: { ids, mode },
+      });
+      return {
+        conversationId,
+        deletedIds: res.data?.data?.deletedIds || ids,
+        mode,
       };
     } catch (error) {
       return thunkAPI.rejectWithValue(getErrorMessage(error));
