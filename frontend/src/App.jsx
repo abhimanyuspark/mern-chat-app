@@ -1,16 +1,22 @@
 import { Suspense } from "react";
-import { Home, Login, Register } from "./pages";
+import { Home, Login, Register, Settings } from "./pages";
 import Loading from "./components/common/Loading";
 import { Route, Routes } from "react-router";
 import UserLayout from "./components/others/UserLayout";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "./redux/features/auth/authThunk";
 import ProtectedRoute from "./components/others/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
+import { useEffect as useIsomorphicLayoutEffect } from "react";
 
 function App() {
   const dispatch = useDispatch();
+  const { theme } = useSelector((state) => state.theme);
+
+  useIsomorphicLayoutEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -32,6 +38,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/chat/:conversationId" element={<Home />} />
             <Route path="/search" element={<Home />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
       </Routes>

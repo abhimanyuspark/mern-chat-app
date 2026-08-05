@@ -1,5 +1,6 @@
 import React from "react";
 import { MessageSkeleton } from "./ChatSkeletons";
+import Avatar from "../common/Avatar";
 
 const MessageList = ({
   messages,
@@ -38,10 +39,13 @@ const MessageList = ({
         return (
           <div
             key={message._id}
-            className={`flex py-1 ${
+            className={`flex py-1 items-end gap-2 ${
               isMine ? "justify-end" : "justify-start"
             } ${isSelected ? "bg-base-200" : ""}`}
           >
+            {!isMine && (
+              <Avatar name={message.sender?.name} size="xs" className="mb-1" />
+            )}
             <div
               className={`relative max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow transition cursor-pointer ${
                 isMine

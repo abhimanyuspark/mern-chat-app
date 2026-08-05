@@ -21,15 +21,15 @@ const Contacts = () => {
   }, [dispatch]);
 
   return (
-    <div className="flex flex-col border-r border-base-200">
+    <div className="flex flex-col h-full bg-base-100">
       {!searchPanel && (
-        <div className="px-2 py-3">
+        <div className="px-4 py-4">
           <div
             onClick={openSearchPanel}
-            className="input input-neutral w-full flex gap-2 p-5.5 items-center cursor-pointer"
+            className="flex items-center gap-3 px-4 py-3 bg-base-200 hover:bg-base-300 rounded-2xl cursor-pointer transition-colors text-base-content/60"
           >
-            <FiSearch />
-            <p>Search here...</p>
+            <FiSearch size={18} />
+            <span className="text-sm font-medium">Search conversations...</span>
           </div>
         </div>
       )}

@@ -4,12 +4,12 @@ import Chat from "../Chat";
 
 const Desktop = () => {
   return (
-    <div className="flex h-full w-full">
-      <div className="h-full w-xs shrink-0 overflow-y-scroll bg-base-300">
+    <div className="flex h-full w-full bg-base-200">
+      <div className="h-full w-80 shrink-0 border-r border-base-300">
         <Contacts />
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-w-0">
         <Chat />
       </div>
     </div>

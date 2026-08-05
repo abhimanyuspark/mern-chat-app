@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
 import { fetchConversationById } from "../../redux/features/chat/chatThunk";
+import Avatar from "../common/Avatar";
 
 const ChatHeader = () => {
   const dispatch = useDispatch();
@@ -30,7 +31,7 @@ const ChatHeader = () => {
   const chatTitle = participant?.name || "Conversation";
 
   return (
-    <div className="flex items-center gap-3 border-b border-base-200 bg-base-300 p-3">
+    <div className="flex items-center gap-3 border-b border-base-200 bg-base-100 px-4 py-3 shadow-sm z-10">
       <button
         onClick={() => {
           dispatch(selectConversationId(null));
@@ -38,20 +39,19 @@ const ChatHeader = () => {
         }}
         className="btn btn-ghost btn-circle btn-sm md:hidden"
       >
-        <FiArrowLeft className="text-xl" />
+        <FiArrowLeft size={20} />
       </button>
 
-      <div className={`avatar ${isOnline ? "online" : "offline"}`}>
-        <div className="bg-neutral text-neutral-content flex items-center justify-center rounded-full p-4">
-          <span>{chatTitle.charAt(0)}</span>
-        </div>
-      </div>
+      <Avatar name={chatTitle} size="sm" isOnline={isOnline} />
 
       <div className="flex flex-col">
-        <h3 className="font-bold text-sm leading-tight">{chatTitle}</h3>
-        <span className={`text-[10px] font-medium ${isOnline ? "text-success" : "text-base-content/50"}`}>
-          {isOnline ? "Online" : "Offline"}
-        </span>
+        <h3 className="font-bold text-base leading-tight tracking-tight">{chatTitle}</h3>
+        <div className="flex items-center gap-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-success" : "bg-base-content/20"}`}></div>
+          <span className={`text-[11px] font-semibold uppercase tracking-wider ${isOnline ? "text-success" : "text-base-content/40"}`}>
+            {isOnline ? "Active Now" : "Offline"}
+          </span>
+        </div>
       </div>
     </div>
   );

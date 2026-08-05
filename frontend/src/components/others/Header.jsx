@@ -1,13 +1,17 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import toast from "react-hot-toast";
 import { logout } from "../../redux/features/auth/authThunk";
+import { toggleTheme } from "../../redux/features/theme/themeSlice";
+import { FiSun, FiMoon, FiSettings, FiLogOut } from "react-icons/fi";
+import Avatar from "../common/Avatar";
 
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { theme } = useSelector((state) => state.theme);
 
   const handleLogout = async () => {
     try {
@@ -20,32 +24,45 @@ const Header = () => {
   };
 
   return (
-    <div className="navbar bg-base-100 border-b border-base-200 h-16 px-4">
+    <div className="navbar bg-base-100 border-b border-base-200 h-16 px-4 shadow-sm">
       <div className="flex-1">
-        <h1 className="text-xl font-bold text-primary tracking-tight">ChatApp</h1>
+        <Link to="/" className="text-xl font-black text-primary tracking-tighter">
+          CHATAPP
+        </Link>
       </div>
-      <div className="flex-none gap-2">
+      <div className="flex-none gap-3 items-center">
+        <button
+          onClick={() => dispatch(toggleTheme())}
+          className="btn btn-ghost btn-circle"
+          aria-label="Toggle theme"
+        >
+          {theme === "light" ? <FiMoon size={20} /> : <FiSun size={20} />}
+        </button>
+
         <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
             role="button"
-            className="btn btn-ghost btn-circle avatar placeholder"
+            className="btn btn-ghost btn-circle"
           >
-            <div className="bg-neutral text-neutral-content rounded-full p-4 flex items-center justify-center">
-              <span>{user?.name?.charAt(0)}</span>
-            </div>
+            <Avatar name={user?.name} size="sm" isOnline={true} />
           </div>
           <ul
             tabIndex={0}
-            className="mt-3 z-100 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-base-200"
+            className="mt-3 z-100 p-2 shadow-xl menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-base-200"
           >
             <li className="menu-title px-4 py-2 opacity-60">
-              Hello, {user?.name}
+              {user?.name}
             </li>
-            <div className="divider my-0"></div>
+            <div className="divider my-0 opacity-20"></div>
             <li>
-              <button onClick={handleLogout} className="text-error">
-                Logout
+              <Link to="/settings" className="py-2">
+                <FiSettings /> Settings
+              </Link>
+            </li>
+            <li>
+              <button onClick={handleLogout} className="text-error py-2">
+                <FiLogOut /> Logout
               </button>
             </li>
           </ul>

@@ -8,6 +8,7 @@ import {
 import socket from "../../socket/socket";
 
 import { ConversationSkeleton } from "./ChatSkeletons";
+import Avatar from "../common/Avatar";
 
 const ConversationList = () => {
   const dispatch = useDispatch();
@@ -59,13 +60,11 @@ const ConversationList = () => {
                     : "bg-base-100 hover:bg-base-200"
                 }`}
               >
-                <div className={`avatar ${isOnline ? "online" : "offline"}`}>
-                  <div className="bg-neutral text-neutral-content rounded-full p-4 flex items-center justify-center">
-                    <span className="text-lg">
-                      {participant?.name?.charAt(0) || "C"}
-                    </span>
-                  </div>
-                </div>
+                <Avatar
+                  name={participant?.name || "C"}
+                  size="sm"
+                  isOnline={isOnline}
+                />
 
                 <div className="flex-1 overflow-hidden">
                   <div className="flex justify-between items-baseline">

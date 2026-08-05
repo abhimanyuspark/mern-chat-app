@@ -8,6 +8,7 @@ import {
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
 import { FiArrowLeft } from "react-icons/fi";
 import { UserSkeleton } from "./ChatSkeletons";
+import Avatar from "../common/Avatar";
 
 const UserSearchPanel = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -73,11 +74,7 @@ const UserSearchPanel = ({ onClose }) => {
                 onClick={() => handleStartConversation(person)}
                 className="text-left px-4 py-4 hover:bg-base-200 bg-base-100 border-b border-base-200 flex items-center gap-3 transition"
               >
-                <div className="avatar placeholder">
-                  <div className="bg-neutral text-neutral-content rounded-full p-4 flex items-center justify-center">
-                    <span className="text-xs">{person.name.charAt(0)}</span>
-                  </div>
-                </div>
+                <Avatar name={person.name} size="sm" />
                 <span className="font-medium">{person.name}</span>
               </button>
             ))}

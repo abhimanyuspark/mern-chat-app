@@ -1,14 +1,40 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+:root {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  @apply bg-base-100 text-base-content antialiased;
+}
+
 h1{
-  @apply text-3xl font-bold;
+  @apply text-3xl font-black tracking-tighter uppercase;
 }
 
 h2{
-  @apply text-2xl font-bold;
+  @apply text-2xl font-extrabold tracking-tight;
 }
 
 h3{
   @apply text-xl font-bold;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* Custom Scrollbar for better look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-300 rounded-full hover:bg-base-content/20;
 }
