@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 import {
   selectConversationId,
   updateConversation,
+  upsertConversation,
+  removeConversation,
 } from "../../redux/features/chat/chatSlice";
 import socket from "../../socket/socket";
 
@@ -22,8 +24,23 @@ const ConversationList = () => {
       dispatch(updateConversation(data));
     });
 
+    socket.on("new-conversation", (data) => {
+      dispatch(upsertConversation(data));
+    });
+
+    socket.on("group-updated", (data) => {
+      dispatch(upsertConversation(data));
+    });
+
+    socket.on("conversation-removed", (conversationId) => {
+      dispatch(removeConversation(conversationId));
+    });
+
     return () => {
       socket.off("conversation-updated");
+      socket.off("new-conversation");
+      socket.off("group-updated");
+      socket.off("conversation-removed");
     };
   }, [dispatch]);
 
@@ -40,11 +57,22 @@ const ConversationList = () => {
       ) : (
         <div className="flex flex-col">
           {conversations.map((conversation) => {
-            let isOnline;
-            const participant = conversation.participants?.find((item) => {
-              isOnline = onlineUsers.includes(item._id);
-              return item._id !== user?._id;
-            });
+            let isOnline = false;
+            let displayName = "";
+            let displayAvatar = "";
+
+            if (conversation.isGroup) {
+              displayName = conversation.groupName;
+              displayAvatar = conversation.groupAvatar;
+            } else {
+              const participant = conversation.participants?.find(
+                (item) => item._id !== user?._id,
+              );
+              displayName = participant?.name || "Deleted User";
+              displayAvatar = participant?.avatar;
+              isOnline = onlineUsers.includes(participant?._id);
+            }
+
             const preview = conversation.lastMessage?.text || "Start chatting";
 
             return (
@@ -61,18 +89,24 @@ const ConversationList = () => {
                 }`}
               >
                 <Avatar
-                  name={participant?.name || "C"}
+                  name={displayName}
+                  src={displayAvatar}
                   size="sm"
-                  isOnline={isOnline}
+                  isOnline={!conversation.isGroup && isOnline}
                 />
 
                 <div className="flex-1 overflow-hidden">
                   <div className="flex justify-between items-baseline">
                     <h4 className="font-bold truncate text-base">
-                      {participant?.name || "Conversation"}
+                      {displayName}
                     </h4>
                   </div>
                   <p className="truncate text-sm opacity-60">
+                    {conversation.lastMessage?.sender?._id === user?._id
+                      ? "You: "
+                      : conversation.isGroup && conversation.lastMessage?.sender
+                        ? `${conversation.lastMessage.sender.name}: `
+                        : ""}
                     {preview}
                   </p>
                 </div>

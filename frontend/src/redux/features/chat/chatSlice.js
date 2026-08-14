@@ -7,6 +7,11 @@ import {
   sendMessage,
   fetchConversationById,
   deleteMessages,
+  createGroup,
+  updateGroupInfo,
+  addGroupMember,
+  removeGroupMember,
+  leaveGroup,
 } from "./chatThunk";
 
 const initialState = {
@@ -81,6 +86,20 @@ const chatSlice = createSlice({
             message.text = text || "This message was deleted";
           }
         }
+
+        // Update lastMessage in conversation list if it was this message
+        const conversation = state.conversations.find(
+          (c) => c._id === conversationId,
+        );
+        if (conversation?.lastMessage?._id === messageId) {
+          // Find the next best last message from the loaded messages
+          const msgs = state.messages[conversationId] || [];
+          const lastNonDeleted = [...msgs]
+            .reverse()
+            .find((m) => m._id !== messageId && !m.isDeleted);
+
+          conversation.lastMessage = lastNonDeleted || null;
+        }
       } else {
         if (state.messages[conversationId]) {
           state.messages[conversationId] = state.messages[
@@ -109,6 +128,37 @@ const chatSlice = createSlice({
           remainingMessages.length > 0
             ? remainingMessages[remainingMessages.length - 1]
             : null;
+      }
+    },
+    upsertConversation: (state, action) => {
+      const conversation = action.payload;
+      const index = state.conversations.findIndex(
+        (c) => c._id === conversation._id,
+      );
+      if (index !== -1) {
+        state.conversations[index] = {
+          ...state.conversations[index],
+          ...conversation,
+        };
+      } else {
+        state.conversations.unshift(conversation);
+      }
+
+      if (state.activeConversationId === conversation._id) {
+        state.activeConversation = {
+          ...state.activeConversation,
+          ...conversation,
+        };
+      }
+    },
+    removeConversation: (state, action) => {
+      const conversationId = action.payload;
+      state.conversations = state.conversations.filter(
+        (c) => c._id !== conversationId,
+      );
+      if (state.activeConversationId === conversationId) {
+        state.activeConversationId = null;
+        state.activeConversation = null;
       }
     },
   },
@@ -212,6 +262,68 @@ const chatSlice = createSlice({
       })
       .addCase(deleteMessages.rejected, (state, action) => {
         state.error = action.payload;
+      })
+
+      .addCase(createGroup.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(createGroup.fulfilled, (state, action) => {
+        const conversation = action.payload;
+        const exists = state.conversations.find((c) => c._id === conversation._id);
+        if (!exists) {
+          state.conversations.unshift(conversation);
+        }
+        state.activeConversationId = conversation._id;
+        state.activeConversation = conversation;
+      })
+      .addCase(createGroup.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      .addCase(updateGroupInfo.fulfilled, (state, action) => {
+        const index = state.conversations.findIndex(
+          (c) => c._id === action.payload._id,
+        );
+        if (index !== -1) {
+          state.conversations[index] = action.payload;
+        }
+        if (state.activeConversationId === action.payload._id) {
+          state.activeConversation = action.payload;
+        }
+      })
+
+      .addCase(addGroupMember.fulfilled, (state, action) => {
+        const index = state.conversations.findIndex(
+          (c) => c._id === action.payload._id,
+        );
+        if (index !== -1) {
+          state.conversations[index] = action.payload;
+        }
+        if (state.activeConversationId === action.payload._id) {
+          state.activeConversation = action.payload;
+        }
+      })
+
+      .addCase(removeGroupMember.fulfilled, (state, action) => {
+        const index = state.conversations.findIndex(
+          (c) => c._id === action.payload._id,
+        );
+        if (index !== -1) {
+          state.conversations[index] = action.payload;
+        }
+        if (state.activeConversationId === action.payload._id) {
+          state.activeConversation = action.payload;
+        }
+      })
+
+      .addCase(leaveGroup.fulfilled, (state, action) => {
+        state.conversations = state.conversations.filter(
+          (c) => c._id !== action.payload,
+        );
+        if (state.activeConversationId === action.payload) {
+          state.activeConversationId = null;
+          state.activeConversation = null;
+        }
       });
   },
 });
@@ -224,5 +336,7 @@ export const {
   removeMessages,
   markMessageDeleted,
   setReplyingTo,
+  upsertConversation,
+  removeConversation,
 } = chatSlice.actions;
 export default chatSlice.reducer;

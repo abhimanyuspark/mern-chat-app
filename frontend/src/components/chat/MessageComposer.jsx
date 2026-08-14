@@ -51,21 +51,21 @@ const MessageComposer = () => {
         </div>
       )}
       
-      <form onSubmit={onSubmit} className="flex gap-2 items-center">
+      <form onSubmit={onSubmit} className="flex gap-4 items-center">
         <div className="flex-1 relative">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message..."
-            className="input bg-base-200 border-none focus:ring-2 focus:ring-primary w-full pr-10 rounded-2xl h-12"
+            className="input bg-base-200 w-full rounded-2xl p-5 pr-12 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
         <button
           type="submit"
           disabled={!text.trim() || sendingMessage}
-          className="btn btn-primary btn-circle shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:bg-base-300"
+          className="btn btn-primary btn-circle btn-lg shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:bg-base-300 flex items-center justify-center"
         >
-          <FiSend size={20} className="ml-1" />
+          <FiSend size={20} />
         </button>
       </form>
     </div>

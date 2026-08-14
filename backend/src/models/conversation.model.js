@@ -30,6 +30,13 @@ const conversationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    groupAdmins: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,

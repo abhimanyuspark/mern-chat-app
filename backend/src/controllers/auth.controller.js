@@ -84,6 +84,7 @@ export const login = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, {
     refreshToken: "",
+    fcmToken: null,
   });
 
   return res

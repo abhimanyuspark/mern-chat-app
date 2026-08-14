@@ -60,3 +60,31 @@ export const getUserById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "User fetched successfully"));
 });
+
+export const updateFcmToken = asyncHandler(async (req, res) => {
+  const { fcmToken } = req.body;
+
+  if (!fcmToken) {
+    throw new ApiError(400, "FCM token is required");
+  }
+
+  // Use $addToSet to prevent duplicate tokens in the array
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $addToSet: {
+        fcmTokens: {
+          token: fcmToken,
+          device: "android",
+          createdAt: new Date(),
+        },
+      },
+    },
+    { new: true },
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "FCM token updated successfully"));
+});
+

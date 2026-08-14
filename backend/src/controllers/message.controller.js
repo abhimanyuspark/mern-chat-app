@@ -1,7 +1,9 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 import { getIo } from "../sockets/socket.js";
 import { getSocketId } from "../sockets/socketManager.js";
+import { sendPushNotification } from "../utils/notification.utils.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -58,13 +60,29 @@ export const sendMessage = asyncHandler(async (req, res) => {
   participants.forEach((userId) => {
     const socketId = getSocketId(userId);
 
-    if (!socketId) return;
+    if (socketId) {
+      io.to(socketId).emit("conversation-updated", {
+        conversationId: conversation._id,
 
-    io.to(socketId).emit("conversation-updated", {
-      conversationId: conversation._id,
-
-      lastMessage: populatedMessage,
-    });
+        lastMessage: populatedMessage,
+      });
+    } else {
+      // Send push notification to all user's devices if not connected via socket
+      User.findById(userId).then((user) => {
+        if (user && user.fcmTokens && user.fcmTokens.length > 0) {
+          const tokens = user.fcmTokens.map((t) => t.token);
+          sendPushNotification(
+            tokens,
+            populatedMessage.sender.name,
+            populatedMessage.text,
+            {
+              conversationId: conversation._id.toString(),
+              senderId: populatedMessage.sender._id.toString(),
+            },
+          );
+        }
+      });
+    }
   });
 
   return res
@@ -145,10 +163,10 @@ export const deleteMessage = asyncHandler(async (req, res) => {
   }
 
   const io = getIo();
+  const currentUserId = req.user._id.toString();
+  const conversationsToUpdate = new Set();
 
   for (const message of messages) {
-    const currentUserId = req.user._id.toString();
-
     if (mode === "everyone") {
       message.isDeleted = true;
       message.text = "This message was deleted";
@@ -162,6 +180,8 @@ export const deleteMessage = asyncHandler(async (req, res) => {
         isDeletedForEveryone: true,
         text: "This message was deleted",
       });
+
+      conversationsToUpdate.add(message.conversation.toString());
     } else {
       const currentDeletedFor =
         message.deletedFor?.map((id) => id.toString()) || [];
@@ -171,13 +191,68 @@ export const deleteMessage = asyncHandler(async (req, res) => {
       message.deletedFor = currentDeletedFor;
       await message.save();
 
-      // Notify only the user who deleted for themselves (to update their UI if they have multiple tabs/devices)
+      // Notify only the user who deleted for themselves
       const socketId = getSocketId(currentUserId);
       if (socketId) {
         io.to(socketId).emit("message-deleted", {
           messageId: message._id,
           conversationId: message.conversation,
           isDeletedForEveryone: false,
+        });
+      }
+      conversationsToUpdate.add(message.conversation.toString());
+    }
+  }
+
+  // Update last messages for affected conversations
+  for (const convId of conversationsToUpdate) {
+    const conversation = await Conversation.findById(convId);
+    if (!conversation) continue;
+
+    if (mode === "everyone") {
+      const lastMsg = await Message.findOne({
+        conversation: convId,
+        isDeleted: false,
+      })
+        .sort({ createdAt: -1 })
+        .populate("sender", "name avatar");
+
+      // Update the conversation's lastMessage reference if it pointed to a deleted message
+      const currentLastMsgId = conversation.lastMessage?.toString();
+      const isCurrentLastMsgDeleted = messages.some(
+        (m) => m._id.toString() === currentLastMsgId,
+      );
+
+      if (isCurrentLastMsgDeleted) {
+        conversation.lastMessage = lastMsg ? lastMsg._id : null;
+        await conversation.save();
+      }
+
+      // Notify all participants about the new preview
+      conversation.participants.forEach((userId) => {
+        const socketId = getSocketId(userId);
+        if (socketId) {
+          io.to(socketId).emit("conversation-updated", {
+            conversationId: conversation._id,
+            lastMessage: lastMsg,
+          });
+        }
+      });
+    } else {
+      // mode === "me"
+      const lastMsgForUser = await Message.findOne({
+        conversation: convId,
+        isDeleted: false,
+        deletedFor: { $ne: currentUserId },
+      })
+        .sort({ createdAt: -1 })
+        .populate("sender", "name avatar");
+
+      const socketId = getSocketId(currentUserId);
+      if (socketId) {
+        io.to(socketId).emit("conversation-updated", {
+          conversationId: conversation._id,
+          lastMessage: lastMsgForUser,
         });
       }
     }

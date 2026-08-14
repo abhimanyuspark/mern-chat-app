@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiInfo } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
@@ -16,19 +16,37 @@ const ChatHeader = () => {
 
   const onlineUsers = useSelector((state) => state.socket.onlineUsers);
 
-  let isOnline;
-
   useEffect(() => {
     if (!activeConversationId) return;
     dispatch(fetchConversationById(activeConversationId));
   }, [activeConversationId, dispatch]);
 
-  const participant = activeConversation?.participants?.find((item) => {
-    isOnline = onlineUsers.includes(item._id);
-    return item._id !== user?._id;
-  });
+  if (!activeConversation) return null;
 
-  const chatTitle = participant?.name || "Conversation";
+  let displayName = "";
+  let displayAvatar = "";
+  let isOnline = false;
+  let subText = "";
+
+  if (activeConversation.isGroup) {
+    displayName = activeConversation.groupName;
+    displayAvatar = activeConversation.groupAvatar;
+    subText = `${activeConversation.participants?.length || 0} members`;
+  } else {
+    const participant = activeConversation.participants?.find(
+      (item) => item._id !== user?._id,
+    );
+    displayName = participant?.name || "Deleted User";
+    displayAvatar = participant?.avatar;
+    isOnline = onlineUsers.includes(participant?._id);
+    subText = isOnline ? "Active Now" : "Offline";
+  }
+
+  const handleHeaderClick = () => {
+    if (activeConversation.isGroup) {
+      navigate(`/chat/${activeConversation._id}/info`);
+    }
+  };
 
   return (
     <div className="flex items-center gap-3 border-b border-base-200 bg-base-100 px-4 py-3 shadow-sm z-10">
@@ -42,17 +60,42 @@ const ChatHeader = () => {
         <FiArrowLeft size={20} />
       </button>
 
-      <Avatar name={chatTitle} size="sm" isOnline={isOnline} />
+      <Avatar
+        name={displayName}
+        src={displayAvatar}
+        size="sm"
+        isOnline={!activeConversation.isGroup && isOnline}
+      />
 
-      <div className="flex flex-col">
-        <h3 className="font-bold text-base leading-tight tracking-tight">{chatTitle}</h3>
+      <div
+        className="flex flex-col flex-1 cursor-pointer"
+        onClick={handleHeaderClick}
+      >
+        <h3 className="font-bold text-base leading-tight tracking-tight">
+          {displayName}
+        </h3>
         <div className="flex items-center gap-1">
-          <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-success" : "bg-base-content/20"}`}></div>
-          <span className={`text-[11px] font-semibold uppercase tracking-wider ${isOnline ? "text-success" : "text-base-content/40"}`}>
-            {isOnline ? "Active Now" : "Offline"}
+          {!activeConversation.isGroup && (
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-success" : "bg-base-content/20"}`}
+            ></div>
+          )}
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-wider ${isOnline ? "text-success" : "text-base-content/40"}`}
+          >
+            {subText}
           </span>
         </div>
       </div>
+
+      {activeConversation.isGroup && (
+        <button
+          onClick={handleHeaderClick}
+          className="btn btn-ghost btn-circle btn-sm"
+        >
+          <FiInfo size={20} />
+        </button>
+      )}
     </div>
   );
 };

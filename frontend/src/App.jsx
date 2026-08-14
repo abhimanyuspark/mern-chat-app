@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Home, Login, Register, Settings } from "./pages";
+import { Home, Login, Register, Settings, GroupInfo } from "./pages";
 import Loading from "./components/common/Loading";
 import { Route, Routes } from "react-router";
 import UserLayout from "./components/others/UserLayout";
@@ -9,10 +9,14 @@ import { getCurrentUser } from "./redux/features/auth/authThunk";
 import ProtectedRoute from "./components/others/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import { useEffect as useIsomorphicLayoutEffect } from "react";
+import usePushNotifications from "./hooks/usePushNotifications";
 
 function App() {
   const dispatch = useDispatch();
   const { theme } = useSelector((state) => state.theme);
+
+  // Initialize push notifications
+  usePushNotifications();
 
   useIsomorphicLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -37,6 +41,7 @@ function App() {
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/chat/:conversationId" element={<Home />} />
+            <Route path="/chat/:conversationId/info" element={<GroupInfo />} />
             <Route path="/search" element={<Home />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

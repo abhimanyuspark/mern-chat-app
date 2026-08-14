@@ -103,3 +103,71 @@ export const deleteMessages = createAsyncThunk(
     }
   },
 );
+
+export const createGroup = createAsyncThunk(
+  "chat/createGroup",
+  async ({ name, participants }, thunkAPI) => {
+    try {
+      const res = await api.post("/conversations/group", { name, participants });
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const updateGroupInfo = createAsyncThunk(
+  "chat/updateGroupInfo",
+  async ({ conversationId, name, groupAvatar }, thunkAPI) => {
+    try {
+      const res = await api.patch(`/conversations/group/${conversationId}`, {
+        name,
+        groupAvatar,
+      });
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const addGroupMember = createAsyncThunk(
+  "chat/addGroupMember",
+  async ({ conversationId, memberId }, thunkAPI) => {
+    try {
+      const res = await api.post(`/conversations/group/${conversationId}/add`, {
+        memberId,
+      });
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const removeGroupMember = createAsyncThunk(
+  "chat/removeGroupMember",
+  async ({ conversationId, memberId }, thunkAPI) => {
+    try {
+      const res = await api.post(
+        `/conversations/group/${conversationId}/remove`,
+        { memberId },
+      );
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const leaveGroup = createAsyncThunk(
+  "chat/leaveGroup",
+  async (conversationId, thunkAPI) => {
+    try {
+      await api.post(`/conversations/group/${conversationId}/leave`);
+      return conversationId;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
