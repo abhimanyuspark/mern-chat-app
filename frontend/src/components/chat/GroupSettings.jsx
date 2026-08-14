@@ -75,7 +75,7 @@ const GroupSettings = ({ onClose }) => {
   if (!activeConversation) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-base-100 w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-base-200 flex justify-between items-center bg-base-200/50">
           <h2 className="text-xl font-bold">Group Info</h2>
