@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import corsOptions from "../config/cors.js";
 import socketAuth from "./auth.socket.js";
 import { addUser, removeUser, getOnlineUsers } from "./socketManager.js";
 
@@ -10,11 +11,7 @@ function initSocket(server) {
   }
 
   io = new Server(server, {
-    cors: {
-      origin: process.env.CLIENT_URL || "*",
-      credentials: true,
-      methods: ["GET", "POST"],
-    },
+    cors: corsOptions,
   });
 
   io.use(socketAuth);

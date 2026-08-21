@@ -1,11 +1,11 @@
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost",
-  "capacitor://localhost",
-];
-
 const corsOptions = {
   origin: (origin, callback) => {
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      "http://localhost",
+      "capacitor://localhost",
+    ];
+
     // Allow requests with no origin (like mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
 

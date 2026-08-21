@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config({ quiet: true });
 import cors from "cors";
+import corsOptions from "./config/cors.js";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import connectDB from "./config/connectDB.js";
@@ -16,12 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const server = createServer(app);
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  }),
-);
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
