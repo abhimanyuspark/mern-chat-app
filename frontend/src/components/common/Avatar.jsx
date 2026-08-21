@@ -1,14 +1,5 @@
 import React from "react";
 
-/**
- * Reusable Avatar component
- * @param {Object} props
- * @param {string} props.name - Name to get the initial from
- * @param {string} [props.image] - Optional image URL
- * @param {string} [props.size] - Size of the avatar (xs, sm, md, lg, xl)
- * @param {boolean} [props.isOnline] - Whether to show the online indicator
- * @param {string} [props.className] - Additional classes
- */
 const Avatar = ({ name, image, size = "md", isOnline, className = "" }) => {
   const sizes = {
     xs: "w-8 h-8 text-xs",
