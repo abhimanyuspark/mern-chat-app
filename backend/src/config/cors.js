@@ -3,6 +3,8 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.CLIENT_URL,
       "http://localhost",
+      "http://localhost:3000",
+      "https://localhost",
       "capacitor://localhost",
     ];
 
