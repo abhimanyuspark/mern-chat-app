@@ -6,8 +6,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Look for service account in the backend root
-const serviceAccountPath = path.join(__dirname, "../../firebase-service-account.json");
+const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+  || path.join(__dirname, "../../firebase-service-account.json");
 
 let isInitialized = false;
 
