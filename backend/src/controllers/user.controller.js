@@ -68,11 +68,16 @@ export const updateFcmToken = asyncHandler(async (req, res) => {
     throw new ApiError(400, "FCM token is required");
   }
 
-  // Use $addToSet to prevent duplicate tokens in the array
+  // Remove the token if it already exists to avoid duplicates with different timestamps
+  await User.findByIdAndUpdate(req.user._id, {
+    $pull: { fcmTokens: { token: fcmToken } },
+  });
+
+  // Add the token to the array
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $addToSet: {
+      $push: {
         fcmTokens: {
           token: fcmToken,
           device: "android",

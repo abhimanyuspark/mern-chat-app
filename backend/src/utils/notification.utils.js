@@ -49,12 +49,10 @@ export const sendPushNotification = async (tokens, title, body, data = {}) => {
     },
     data: {
       ...data,
-      click_action: "FLUTTER_NOTIFICATION_CLICK",
     },
     android: {
       notification: {
         sound: "default",
-        clickAction: "TOP_LEVEL_ACTIVITY",
         channelId: "chat_messages", // Match the channel created on frontend
       },
     },

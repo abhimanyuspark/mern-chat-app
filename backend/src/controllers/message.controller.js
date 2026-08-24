@@ -53,22 +53,28 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
   const io = getIo();
 
+  // Emit to the conversation room for real-time updates
   io.to(conversationId).emit("receive-message", populatedMessage);
 
   const participants = conversation.participants;
 
+  // Notify participants
   participants.forEach((userId) => {
-    const socketId = getSocketId(userId);
+    const userIdStr = userId.toString();
+    const socketId = getSocketId(userIdStr);
 
+    // Emit conversation-updated via socket if connected
     if (socketId) {
       io.to(socketId).emit("conversation-updated", {
         conversationId: conversation._id,
-
         lastMessage: populatedMessage,
       });
-    } else {
-      // Send push notification to all user's devices if not connected via socket
-      User.findById(userId).then((user) => {
+    }
+
+    // Always try to send push notification if not the sender
+    // This ensures notifications arrive even if socket is "connected" but app is in background
+    if (userIdStr !== req.user._id.toString()) {
+      User.findById(userIdStr).then((user) => {
         if (user && user.fcmTokens && user.fcmTokens.length > 0) {
           const tokens = user.fcmTokens.map((t) => t.token);
           sendPushNotification(

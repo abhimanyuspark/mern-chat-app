@@ -49,17 +49,27 @@ const usePushNotifications = () => {
       }
     };
 
-    registerPush();
-
     // Listeners
     const registrationListener = PushNotifications.addListener(
       "registration",
       async (pToken) => {
         console.log("Push registration success");
         try {
-          // Use the community FCM plugin to get the actual FCM token
-          const { token } = await FCM.getToken();
-          console.log("FCM Token obtained: ", token);
+          let token = pToken.value;
+
+          // If on Android, the pToken.value is the FCM token.
+          // We can also try to get it from the FCM plugin for consistency across platforms if needed,
+          // but for Android pToken.value is reliable.
+          if (Capacitor.getPlatform() === "ios") {
+            try {
+              const fcmRes = await FCM.getToken();
+              token = fcmRes.token;
+            } catch (fcmErr) {
+              console.error("Error getting FCM token on iOS, using registration token", fcmErr);
+            }
+          }
+
+          console.log("Token to send to backend: ", token);
 
           // Send the token to the backend
           await api.patch("/users/fcm-token", { fcmToken: token });
@@ -101,6 +111,8 @@ const usePushNotifications = () => {
         }
       },
     );
+
+    registerPush();
 
     return () => {
       // Clean up listeners
