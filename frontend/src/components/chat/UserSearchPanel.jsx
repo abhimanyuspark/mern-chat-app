@@ -6,7 +6,7 @@ import {
   startConversation,
 } from "../../redux/features/chat/chatThunk";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiSearch } from "react-icons/fi";
 import { UserSkeleton } from "./ChatSkeletons";
 import Avatar from "../common/Avatar";
 
@@ -44,14 +44,20 @@ const UserSearchPanel = ({ onClose }) => {
         </button>
 
         <div className="flex-1 flex flex-col gap-2">
-          <input
-            type="search"
-            autoFocus
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search users..."
-            className="input input-primary w-full"
-          />
+          <div className="relative flex items-center w-full">
+            <FiSearch
+              className="absolute left-3.5 z-10 pointer-events-none text-base-content/70"
+              size={18}
+            />
+            <input
+              type="search"
+              autoFocus
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search users..."
+              className="input input-bordered input-primary w-full pl-10"
+            />
+          </div>
         </div>
       </div>
 

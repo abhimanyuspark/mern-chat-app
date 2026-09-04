@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router";
 import toast from "react-hot-toast";
 import { logout } from "../../redux/features/auth/authThunk";
 import { toggleTheme } from "../../redux/features/theme/themeSlice";
-import { FiSun, FiMoon, FiSettings, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon, FiSettings, FiLogOut, FiUsers } from "react-icons/fi";
 import Avatar from "../common/Avatar";
 
 const Header = () => {
@@ -26,11 +26,14 @@ const Header = () => {
   return (
     <div className="navbar bg-base-100 border-b border-base-200 h-16 px-4 shadow-sm">
       <div className="flex-1">
-        <Link to="/" className="text-xl font-black text-primary tracking-tighter">
+        <Link
+          to="/"
+          className="text-xl font-black text-primary tracking-tighter"
+        >
           CHATAPP
         </Link>
       </div>
-      <div className="flex-none gap-3 items-center">
+      <div className="flex gap-3 items-center">
         <button
           onClick={() => dispatch(toggleTheme())}
           className="btn btn-ghost btn-circle"
@@ -40,21 +43,20 @@ const Header = () => {
         </button>
 
         <div className="dropdown dropdown-end">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle"
-          >
+          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
             <Avatar name={user?.name} size="sm" isOnline={true} />
           </div>
           <ul
             tabIndex={0}
             className="mt-3 z-100 p-2 shadow-xl menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-base-200"
           >
-            <li className="menu-title px-4 py-2 opacity-60">
-              {user?.name}
-            </li>
+            <li className="menu-title px-4 py-2 opacity-60">{user?.name}</li>
             <div className="divider my-0 opacity-20"></div>
+            <li>
+              <Link to="/create-group" className="py-2">
+                <FiUsers /> Create Group
+              </Link>
+            </li>
             <li>
               <Link to="/settings" className="py-2">
                 <FiSettings /> Settings

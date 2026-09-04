@@ -60,7 +60,7 @@ const GroupInfo = () => {
   if (!activeConversation && !error) return <Loading />;
   if (error) return <div className="p-4 text-error">{error}</div>;
   if (!activeConversation.isGroup) {
-      return <div className="p-4">This is not a group conversation.</div>;
+    return <div className="p-4">This is not a group conversation.</div>;
   }
 
   const isAdmin = activeConversation?.groupAdmins?.some(
@@ -73,7 +73,10 @@ const GroupInfo = () => {
       return;
     }
     await dispatch(
-      updateGroupInfo({ conversationId: activeConversation._id, name: newName }),
+      updateGroupInfo({
+        conversationId: activeConversation._id,
+        name: newName,
+      }),
     );
     setIsEditingName(false);
   };
@@ -103,30 +106,35 @@ const GroupInfo = () => {
   const handleLeaveGroup = async () => {
     if (window.confirm("Are you sure you want to leave this group?")) {
       await dispatch(leaveGroup(activeConversation._id));
-      navigate("/");
+      navigate("/", { replace: true });
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-base-100 max-w-2xl mx-auto w-full border-x border-base-200 shadow-sm">
-      <div className="p-4 border-b border-base-200 flex items-center gap-4 sticky top-0 bg-base-100 z-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-circle btn-sm"
-        >
-          <FiArrowLeft size={20} />
-        </button>
-        <h2 className="text-xl font-bold">Group Info</h2>
+    <div className="fixed inset-0 z-50 md:static md:z-auto w-full h-full bg-base-100 overflow-y-auto flex flex-col">
+      {/* Top sticky header */}
+      <div className="p-4 border-b border-base-200 sticky top-0 bg-base-100/95 backdrop-blur-sm z-10">
+        <div className="w-full flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="btn btn-ghost btn-circle btn-sm"
+          >
+            <FiArrowLeft size={20} />
+          </button>
+          <h2 className="text-xl font-bold">Group Info</h2>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-8 flex flex-col items-center gap-4 border-b border-base-200 bg-base-200/20">
+      {/* Main Content Area - Centered & Responsive Container */}
+      <div className="p-4 md:p-8 flex-1 flex flex-col gap-6 w-full max-w-3xl mx-auto">
+        {/* Group Profile Header - Responsive Card Layout */}
+        <div className="p-6 md:p-8 border border-base-200 rounded-2xl bg-base-200/30 flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-6 shadow-xs">
           <Avatar
             name={activeConversation.groupName}
             src={activeConversation.groupAvatar}
             size="xl"
           />
-          <div className="w-full flex items-center justify-center gap-2">
+          <div className="flex-1 space-y-2 w-full flex flex-col items-center sm:items-start">
             {isEditingName ? (
               <div className="flex w-full max-w-md gap-2">
                 <input
@@ -150,46 +158,49 @@ const GroupInfo = () => {
                 </button>
               </div>
             ) : (
-              <>
-                <h3 className="text-3xl font-bold text-center">
+              <div className="flex items-center justify-center sm:justify-start gap-3 w-full">
+                <h3 className="text-2xl md:text-3xl font-bold">
                   {activeConversation.groupName}
                 </h3>
                 {isAdmin && (
                   <button
                     onClick={() => setIsEditingName(true)}
-                    className="p-1 hover:text-primary transition-colors"
+                    className="p-1.5 hover:text-primary transition-colors rounded-lg hover:bg-base-200"
+                    title="Edit Group Name"
                   >
-                    <FiEdit2 size={20} />
+                    <FiEdit2 size={18} />
                   </button>
                 )}
-              </>
+              </div>
             )}
+            <p className="text-sm font-medium opacity-60">
+              {activeConversation.participants?.length} members
+            </p>
           </div>
-          <p className="text-sm font-medium opacity-60">
-            {activeConversation.participants?.length} members
-          </p>
         </div>
 
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
+        {/* Members Section */}
+        <div className="p-4 md:p-6 border border-base-200 rounded-2xl bg-base-100 shadow-xs">
+          <div className="flex justify-between items-center mb-6 gap-2">
             <h4 className="font-bold uppercase text-xs tracking-widest opacity-50">
-              Members
+              Members ({activeConversation.participants?.length || 0})
             </h4>
             {isAdmin && (
               <button
                 onClick={() => setIsAddingMember(!isAddingMember)}
                 className="btn btn-primary btn-sm gap-2"
               >
-                <FiUserPlus size={16} /> Add Member
+                <FiUserPlus size={16} />{" "}
+                <span className="hidden sm:inline">Add Member</span>
               </button>
             )}
           </div>
 
           {isAddingMember && (
-            <div className="mb-6 space-y-3 bg-base-200/50 p-4 rounded-2xl">
-              <div className="relative">
+            <div className="mb-6 space-y-3 bg-base-200/50 p-4 rounded-2xl border border-base-200">
+              <div className="relative flex items-center w-full">
                 <FiSearch
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50"
+                  className="absolute left-3.5 z-10 pointer-events-none text-base-content/70"
                   size={18}
                 />
                 <input
@@ -222,13 +233,22 @@ const GroupInfo = () => {
                       <button
                         key={user._id}
                         onClick={() => handleAddMember(user._id)}
-                        className="w-full flex items-center justify-between p-3 hover:bg-base-200 transition-colors border-b border-base-200 last:border-0"
+                        className="w-full flex items-center justify-between p-3 hover:bg-base-200 transition-colors border-b border-base-200 last:border-0 text-left"
                       >
                         <div className="flex items-center gap-3">
-                          <Avatar name={user.name} src={user.avatar} size="sm" />
-                          <span className="font-medium">{user.name}</span>
+                          <Avatar
+                            name={user.name}
+                            src={user.avatar}
+                            size="sm"
+                          />
+                          <span className="font-medium text-sm md:text-base">
+                            {user.name}
+                          </span>
                         </div>
-                        <FiUserPlus className="text-primary" size={18} />
+                        <FiUserPlus
+                          className="text-primary shrink-0"
+                          size={18}
+                        />
                       </button>
                     ))
                 )}
@@ -246,16 +266,16 @@ const GroupInfo = () => {
               return (
                 <div
                   key={participant._id}
-                  className="flex items-center justify-between p-3 hover:bg-base-200 rounded-xl transition-colors"
+                  className="flex items-center justify-between p-3 hover:bg-base-200 rounded-xl transition-colors gap-2"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
                     <Avatar
                       name={participant.name}
                       src={participant.avatar}
                       size="sm"
                     />
-                    <div>
-                      <p className="font-bold">
+                    <div className="min-w-0 text-left">
+                      <p className="font-bold text-sm md:text-base truncate">
                         {participant.name} {isSelf && "(You)"}
                       </p>
                       {isParticipantAdmin && (
@@ -268,7 +288,7 @@ const GroupInfo = () => {
                   {isAdmin && !isSelf && (
                     <button
                       onClick={() => handleRemoveMember(participant._id)}
-                      className="btn btn-ghost btn-circle btn-sm text-error"
+                      className="btn btn-ghost btn-circle btn-sm text-error shrink-0"
                       title="Remove Member"
                     >
                       <FiTrash2 size={18} />
@@ -280,10 +300,11 @@ const GroupInfo = () => {
           </div>
         </div>
 
-        <div className="p-6 border-t border-base-200 mt-4">
+        {/* Leave Group Section */}
+        <div className="pt-2 pb-8 flex justify-center">
           <button
             onClick={handleLeaveGroup}
-            className="btn btn-error btn-outline w-full gap-2"
+            className="btn btn-error btn-outline w-full gap-4"
           >
             <FiLogOut size={20} /> Leave Group
           </button>

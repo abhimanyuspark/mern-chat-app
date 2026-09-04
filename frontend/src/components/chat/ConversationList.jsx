@@ -53,7 +53,9 @@ const ConversationList = () => {
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : conversations.length === 0 ? (
-        <p className="text-sm text-gray-600">No conversations yet.</p>
+        <p className="text-sm text-center text-gray-600">
+          No conversations yet.
+        </p>
       ) : (
         <div className="flex flex-col">
           {conversations.map((conversation) => {

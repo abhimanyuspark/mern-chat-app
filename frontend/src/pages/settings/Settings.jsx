@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../redux/features/theme/themeSlice";
-import { FiUser, FiMoon, FiSun, FiChevronLeft } from "react-icons/fi";
+import { FiUser, FiSun, FiChevronLeft } from "react-icons/fi";
 import { useNavigate } from "react-router";
 import Avatar from "../../components/common/Avatar";
 
@@ -12,20 +12,21 @@ const Settings = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-full bg-base-100 max-w-2xl mx-auto p-4 md:p-6 gap-6">
+    <div className="fixed inset-0 z-50 md:static md:z-auto w-full h-full bg-base-100 overflow-y-auto flex flex-col max-w-2xl mx-auto p-4 md:p-6 gap-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 border-b border-base-200 pb-3 md:border-b-0 md:pb-0">
         <button
           onClick={() => navigate(-1)}
-          className="btn btn-ghost btn-circle md:hidden"
+          className="btn btn-ghost btn-circle btn-sm"
+          title="Go Back"
         >
-          <FiChevronLeft size={24} />
+          <FiChevronLeft size={22} />
         </button>
         <h2 className="text-2xl font-bold">Settings</h2>
       </div>
 
       {/* Profile Section */}
-      <div className="card bg-base-200 shadow-sm overflow-hidden">
+      <div className="card bg-base-200 shadow-xs overflow-hidden">
         <div className="card-body p-4 md:p-6">
           <h3 className="card-title text-base opacity-70 mb-2 flex items-center gap-2">
             <FiUser /> Profile
@@ -41,7 +42,7 @@ const Settings = () => {
       </div>
 
       {/* Appearance Section */}
-      <div className="card bg-base-200 shadow-sm overflow-hidden">
+      <div className="card bg-base-200 shadow-xs overflow-hidden">
         <div className="card-body p-4 md:p-6">
           <h3 className="card-title text-base opacity-70 mb-4 flex items-center gap-2">
             <FiSun /> Appearance
@@ -49,7 +50,9 @@ const Settings = () => {
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="font-medium">Dark Mode</span>
-              <span className="text-xs opacity-60">Adjust the appearance of the application</span>
+              <span className="text-xs opacity-60">
+                Adjust the appearance of the application
+              </span>
             </div>
             <input
               type="checkbox"

@@ -1,5 +1,12 @@
 import { Suspense } from "react";
-import { Home, Login, Register, Settings, GroupInfo } from "./pages";
+import {
+  Home,
+  Login,
+  Register,
+  Settings,
+  GroupInfo,
+  CreateGroup,
+} from "./pages";
 import Loading from "./components/common/Loading";
 import { Route, Routes } from "react-router";
 import UserLayout from "./components/others/UserLayout";
@@ -43,6 +50,7 @@ function App() {
             <Route path="/chat/:conversationId" element={<Home />} />
             <Route path="/chat/:conversationId/info" element={<GroupInfo />} />
             <Route path="/search" element={<Home />} />
+            <Route path="/create-group" element={<CreateGroup />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>

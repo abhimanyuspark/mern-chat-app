@@ -10,11 +10,11 @@ body {
 }
 
 h1{
-  @apply text-3xl font-black tracking-tighter uppercase;
+  @apply text-3xl font-bold tracking-tighter uppercase;
 }
 
 h2{
-  @apply text-2xl font-extrabold tracking-tight;
+  @apply text-2xl font-bold tracking-tight;
 }
 
 h3{
