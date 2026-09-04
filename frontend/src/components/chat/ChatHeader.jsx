@@ -33,13 +33,21 @@ const ChatHeader = () => {
     displayAvatar = activeConversation.groupAvatar;
     subText = `${activeConversation.participants?.length || 0} members`;
   } else {
-    const participant = activeConversation.participants?.find(
-      (item) => item._id !== user?._id,
-    );
-    displayName = participant?.name || "Deleted User";
-    displayAvatar = participant?.avatar;
-    isOnline = onlineUsers.includes(participant?._id);
-    subText = isOnline ? "Active Now" : "Offline";
+    const participant = activeConversation.participants?.find((item) => {
+      const itemId =
+        typeof item === "object" ? item?._id?.toString() : item?.toString();
+      return itemId && itemId !== user?._id?.toString();
+    });
+
+    if (typeof participant === "object" && participant?.name) {
+      displayName = participant.name;
+      displayAvatar = participant.avatar;
+      isOnline = onlineUsers.includes(participant._id);
+      subText = isOnline ? "Active Now" : "Offline";
+    } else {
+      displayName = "Deleted User";
+      subText = "Offline";
+    }
   }
 
   const handleHeaderClick = () => {

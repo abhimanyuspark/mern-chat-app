@@ -24,20 +24,31 @@ export const createConversation = asyncHandler(async (req, res) => {
     },
   });
 
-  if (conversation) {
-    return res
-      .status(200)
-      .json(new ApiResponse(200, conversation, "Conversation already exists"));
+  if (!conversation) {
+    conversation = await Conversation.create({
+      participants: [req.user._id, receiverId],
+    });
   }
 
-  conversation = await Conversation.create({
-    participants: [req.user._id, receiverId],
-  });
+  const populatedConversation = await Conversation.findById(conversation._id).populate(
+    "participants",
+    "name avatar status lastSeen",
+  );
+
+  const io = getIo();
+  const receiverSocketId = getSocketId(receiverId);
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("new-conversation", populatedConversation);
+  }
 
   return res
-    .status(201)
+    .status(200)
     .json(
-      new ApiResponse(201, conversation, "Conversation created successfully"),
+      new ApiResponse(
+        200,
+        populatedConversation,
+        "Conversation retrieved successfully",
+      ),
     );
 });
 
