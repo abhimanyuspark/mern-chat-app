@@ -44,7 +44,7 @@ const Header = () => {
 
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-            <Avatar name={user?.name} size="sm" isOnline={true} />
+            <Avatar name={user?.name} src={user?.avatar} size="sm" isOnline={true} />
           </div>
           <ul
             tabIndex={0}

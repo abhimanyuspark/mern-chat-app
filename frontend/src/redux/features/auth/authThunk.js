@@ -49,3 +49,27 @@ export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
     return thunkAPI.rejectWithValue(getErrorMessage(error));
   }
 });
+
+export const toggleBlockUser = createAsyncThunk(
+  "auth/toggleBlockUser",
+  async (userId, thunkAPI) => {
+    try {
+      const res = await api.post(`/users/toggle-block/${userId}`);
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (data, thunkAPI) => {
+    try {
+      const res = await api.patch("/users/profile", data);
+      return res.data?.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);

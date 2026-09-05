@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { login, register, getCurrentUser, logout } from "./authThunk";
+import { login, register, getCurrentUser, logout, toggleBlockUser, updateProfile } from "./authThunk";
 
 const token = localStorage.getItem("accessToken");
 
@@ -63,6 +63,14 @@ const authSlice = createSlice({
 
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+      })
+      .addCase(toggleBlockUser.fulfilled, (state, action) => {
+        if (state.user && action.payload?.blockedUsers) {
+          state.user.blockedUsers = action.payload.blockedUsers;
+        }
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.user = action.payload;
       });
   },
 });

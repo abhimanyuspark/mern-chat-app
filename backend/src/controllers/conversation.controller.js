@@ -32,7 +32,7 @@ export const createConversation = asyncHandler(async (req, res) => {
 
   const populatedConversation = await Conversation.findById(conversation._id).populate(
     "participants",
-    "name avatar status lastSeen",
+    "name avatar email status lastSeen bio",
   );
 
   const io = getIo();
@@ -55,10 +55,11 @@ export const createConversation = asyncHandler(async (req, res) => {
 export const getConversations = asyncHandler(async (req, res) => {
   const conversations = await Conversation.find({
     participants: req.user._id,
+    deletedBy: { $ne: req.user._id },
   })
     .populate({
       path: "participants",
-      select: "name avatar status lastSeen",
+      select: "name avatar email status lastSeen bio",
     })
     .sort({ updatedAt: -1 });
 
@@ -92,8 +93,8 @@ export const getConversations = asyncHandler(async (req, res) => {
 
 export const getConversationById = asyncHandler(async (req, res) => {
   const conversation = await Conversation.findById(req.params.id)
-    .populate("participants", "name avatar")
-    .populate("groupAdmins", "name avatar")
+    .populate("participants", "name avatar email status lastSeen bio")
+    .populate("groupAdmins", "name avatar email")
     .populate("lastMessage");
 
   if (!conversation) {
@@ -138,7 +139,7 @@ export const createGroup = asyncHandler(async (req, res) => {
 
   const fullConversation = await Conversation.findById(conversation._id).populate(
     "participants",
-    "name avatar status lastSeen",
+    "name avatar email status lastSeen bio",
   );
 
   const io = getIo();
@@ -179,7 +180,7 @@ export const updateGroupInfo = asyncHandler(async (req, res) => {
   await conversation.save();
 
   const updatedConversation = await Conversation.findById(conversationId)
-    .populate("participants", "name avatar status lastSeen")
+    .populate("participants", "name avatar email status lastSeen bio")
     .populate("groupAdmins", "name avatar");
 
   const io = getIo();
@@ -224,7 +225,7 @@ export const addGroupMember = asyncHandler(async (req, res) => {
   await conversation.save();
 
   const updatedConversation = await Conversation.findById(conversationId)
-    .populate("participants", "name avatar status lastSeen")
+    .populate("participants", "name avatar email status lastSeen bio")
     .populate("groupAdmins", "name avatar");
 
   const io = getIo();
@@ -285,7 +286,7 @@ export const removeGroupMember = asyncHandler(async (req, res) => {
   await conversation.save();
 
   const updatedConversation = await Conversation.findById(conversationId)
-    .populate("participants", "name avatar status lastSeen")
+    .populate("participants", "name avatar email status lastSeen bio")
     .populate("groupAdmins", "name avatar");
 
   const io = getIo();
@@ -359,7 +360,7 @@ export const leaveGroup = asyncHandler(async (req, res) => {
   await conversation.save();
 
   const updatedConversation = await Conversation.findById(conversationId)
-    .populate("participants", "name avatar status lastSeen")
+    .populate("participants", "name avatar email status lastSeen bio")
     .populate("groupAdmins", "name avatar");
 
   oldParticipants.forEach((participantId) => {
@@ -376,4 +377,45 @@ export const leaveGroup = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Left group successfully"));
+});
+
+export const deleteConversation = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user._id.toString();
+
+  const conversation = await Conversation.findById(id);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+
+  // Mark all messages as deleted for this user
+  const messages = await Message.find({ conversation: id });
+  for (const message of messages) {
+    const currentDeletedFor =
+      message.deletedFor?.map((mId) => mId.toString()) || [];
+    if (!currentDeletedFor.includes(userId)) {
+      currentDeletedFor.push(userId);
+      message.deletedFor = currentDeletedFor;
+      await message.save();
+    }
+  }
+
+  // Add user to deletedBy array on conversation
+  const currentDeletedBy =
+    conversation.deletedBy?.map((dId) => dId.toString()) || [];
+  if (!currentDeletedBy.includes(userId)) {
+    currentDeletedBy.push(userId);
+    conversation.deletedBy = currentDeletedBy;
+    await conversation.save();
+  }
+
+  const io = getIo();
+  const socketId = getSocketId(userId);
+  if (socketId) {
+    io.to(socketId).emit("conversation-removed", id);
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { id }, "Conversation deleted successfully"));
 });

@@ -5,6 +5,8 @@ import {
   searchUsers,
   getUserById,
   updateFcmToken,
+  toggleBlockUser,
+  updateProfile,
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -12,6 +14,10 @@ const router = Router();
 router.use(protect);
 
 router.patch("/fcm-token", updateFcmToken);
+
+router.patch("/profile", updateProfile);
+
+router.post("/toggle-block/:userId", toggleBlockUser);
 
 router.get("/", getUsers);
 

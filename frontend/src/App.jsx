@@ -6,6 +6,7 @@ import {
   Settings,
   GroupInfo,
   CreateGroup,
+  UserInfo,
 } from "./pages";
 import Loading from "./components/common/Loading";
 import { Route, Routes } from "react-router";
@@ -49,6 +50,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/chat/:conversationId" element={<Home />} />
             <Route path="/chat/:conversationId/info" element={<GroupInfo />} />
+            <Route path="/chat/:conversationId/user-info" element={<UserInfo />} />
             <Route path="/search" element={<Home />} />
             <Route path="/create-group" element={<CreateGroup />} />
             <Route path="/settings" element={<Settings />} />

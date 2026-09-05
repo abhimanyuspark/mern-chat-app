@@ -1,10 +1,24 @@
 import React, { useEffect } from "react";
-import { FiArrowLeft, FiInfo } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiInfo,
+  FiMoreVertical,
+  FiTrash2,
+  FiUser,
+  FiSlash,
+  FiTrash,
+} from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { selectConversationId } from "../../redux/features/chat/chatSlice";
-import { fetchConversationById } from "../../redux/features/chat/chatThunk";
+import {
+  fetchConversationById,
+  clearChatMessages,
+  deleteConversationThunk,
+} from "../../redux/features/chat/chatThunk";
+import { toggleBlockUser } from "../../redux/features/auth/authThunk";
 import Avatar from "../common/Avatar";
+import toast from "react-hot-toast";
 
 const ChatHeader = () => {
   const dispatch = useDispatch();
@@ -27,22 +41,23 @@ const ChatHeader = () => {
   let displayAvatar = "";
   let isOnline = false;
   let subText = "";
+  let targetUser = null;
 
   if (activeConversation.isGroup) {
     displayName = activeConversation.groupName;
     displayAvatar = activeConversation.groupAvatar;
     subText = `${activeConversation.participants?.length || 0} members`;
   } else {
-    const participant = activeConversation.participants?.find((item) => {
+    targetUser = activeConversation.participants?.find((item) => {
       const itemId =
         typeof item === "object" ? item?._id?.toString() : item?.toString();
       return itemId && itemId !== user?._id?.toString();
     });
 
-    if (typeof participant === "object" && participant?.name) {
-      displayName = participant.name;
-      displayAvatar = participant.avatar;
-      isOnline = onlineUsers.includes(participant._id);
+    if (typeof targetUser === "object" && targetUser?.name) {
+      displayName = targetUser.name;
+      displayAvatar = targetUser.avatar;
+      isOnline = onlineUsers.includes(targetUser._id);
       subText = isOnline ? "Active Now" : "Offline";
     } else {
       displayName = "Deleted User";
@@ -50,9 +65,83 @@ const ChatHeader = () => {
     }
   }
 
+  const isBlocked =
+    !activeConversation.isGroup && targetUser?._id
+      ? user?.blockedUsers?.some(
+          (id) => (id._id || id)?.toString() === targetUser._id.toString(),
+        )
+      : false;
+
   const handleHeaderClick = () => {
     if (activeConversation.isGroup) {
       navigate(`/chat/${activeConversation._id}/info`);
+    } else {
+      navigate(`/chat/${activeConversation._id}/user-info`);
+    }
+  };
+
+  const closeDropdown = () => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleToggleBlock = async () => {
+    closeDropdown();
+    if (!targetUser?._id) return;
+
+    const actionText = isBlocked ? "unblock" : "block";
+    if (
+      window.confirm(
+        `Are you sure you want to ${actionText} ${displayName}?`,
+      )
+    ) {
+      try {
+        const action = await dispatch(toggleBlockUser(targetUser._id));
+        if (toggleBlockUser.fulfilled.match(action)) {
+          toast.success(
+            `User ${isBlocked ? "unblocked" : "blocked"} successfully`,
+          );
+        } else {
+          toast.error(action.payload || `Failed to ${actionText} user`);
+        }
+      } catch (err) {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  const handleClearChat = async () => {
+    closeDropdown();
+    if (
+      window.confirm(
+        "Are you sure you want to clear this chat? All messages will be cleared, but the conversation will remain in your chat list.",
+      )
+    ) {
+      try {
+        await dispatch(clearChatMessages(activeConversation._id)).unwrap();
+        toast.success("Chat cleared");
+      } catch (err) {
+        toast.error(err || "Failed to clear chat");
+      }
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    closeDropdown();
+    if (
+      window.confirm(
+        "Are you sure you want to delete this chat? All messages and this conversation will be removed from your chat list.",
+      )
+    ) {
+      try {
+        await dispatch(deleteConversationThunk(activeConversation._id)).unwrap();
+        toast.success("Chat deleted");
+        dispatch(selectConversationId(null));
+        navigate("/", { replace: true });
+      } catch (err) {
+        toast.error(err || "Failed to delete chat");
+      }
     }
   };
 
@@ -85,25 +174,97 @@ const ChatHeader = () => {
         <div className="flex items-center gap-1">
           {!activeConversation.isGroup && (
             <div
-              className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-success" : "bg-base-content/20"}`}
+              className={`w-1.5 h-1.5 rounded-full ${
+                isOnline ? "bg-success" : "bg-base-content/20"
+              }`}
             ></div>
           )}
           <span
-            className={`text-[11px] font-semibold uppercase tracking-wider ${isOnline ? "text-success" : "text-base-content/40"}`}
+            className={`text-[11px] font-semibold uppercase tracking-wider ${
+              isOnline ? "text-success" : "text-base-content/40"
+            }`}
           >
             {subText}
           </span>
+          {isBlocked && (
+            <span className="ml-2 text-[10px] bg-error/10 text-error px-1.5 py-0.5 rounded-full font-bold">
+              Blocked
+            </span>
+          )}
         </div>
       </div>
 
-      {activeConversation.isGroup && (
-        <button
-          onClick={handleHeaderClick}
+      <div className="dropdown dropdown-end">
+        <div
+          tabIndex={0}
+          role="button"
           className="btn btn-ghost btn-circle btn-sm"
         >
-          <FiInfo size={20} />
-        </button>
-      )}
+          <FiMoreVertical size={20} />
+        </div>
+        <ul
+          tabIndex={0}
+          className="mt-3 z-50 p-2 shadow-xl menu menu-sm dropdown-content bg-base-100 rounded-box w-48 border border-base-200"
+        >
+          {activeConversation.isGroup ? (
+            <li>
+              <button
+                onClick={() => {
+                  closeDropdown();
+                  navigate(`/chat/${activeConversation._id}/info`);
+                }}
+                className="py-2 flex items-center gap-2"
+              >
+                <FiInfo size={16} />
+                <span>Group Info</span>
+              </button>
+            </li>
+          ) : (
+            <>
+              <li>
+                <button
+                  onClick={() => {
+                    closeDropdown();
+                    navigate(`/chat/${activeConversation._id}/user-info`);
+                  }}
+                  className="py-2 flex items-center gap-2"
+                >
+                  <FiUser size={16} />
+                  <span>View Contact</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleToggleBlock}
+                  className="py-2 text-warning flex items-center gap-2"
+                >
+                  <FiSlash size={16} />
+                  <span>{isBlocked ? "Unblock User" : "Block User"}</span>
+                </button>
+              </li>
+            </>
+          )}
+
+          <li>
+            <button
+              onClick={handleClearChat}
+              className="py-2 flex items-center gap-2"
+            >
+              <FiTrash size={16} />
+              <span>Clear Chat</span>
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={handleDeleteChat}
+              className="py-2 text-error flex items-center gap-2"
+            >
+              <FiTrash2 size={16} />
+              <span>Delete Chat</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

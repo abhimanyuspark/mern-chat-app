@@ -33,6 +33,36 @@ export const sendMessage = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Access denied");
   }
 
+  // Block checks for 1-on-1 conversations
+  if (!conversation.isGroup) {
+    const recipientId = conversation.participants.find(
+      (id) => id.toString() !== req.user._id.toString(),
+    );
+
+    if (recipientId) {
+      const recipient = await User.findById(recipientId);
+
+      if (
+        req.user.blockedUsers?.some(
+          (id) => id.toString() === recipientId.toString(),
+        )
+      ) {
+        throw new ApiError(
+          400,
+          "You have blocked this user. Unblock to send messages.",
+        );
+      }
+
+      if (
+        recipient?.blockedUsers?.some(
+          (id) => id.toString() === req.user._id.toString(),
+        )
+      ) {
+        throw new ApiError(400, "You cannot send messages to this user.");
+      }
+    }
+  }
+
   const message = await Message.create({
     conversation: conversationId,
     sender: req.user._id,
@@ -42,6 +72,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   });
 
   conversation.lastMessage = message._id;
+  conversation.deletedBy = [];
   await conversation.save();
 
   const populatedMessage = await Message.findById(message._id)
@@ -273,4 +304,55 @@ export const deleteMessage = asyncHandler(async (req, res) => {
         : "Message deleted successfully",
     ),
   );
+});
+
+export const clearChat = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+  const userId = req.user._id.toString();
+
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  }
+
+  // Find all messages in this conversation
+  const messages = await Message.find({ conversation: conversationId });
+
+  for (const message of messages) {
+    const currentDeletedFor =
+      message.deletedFor?.map((id) => id.toString()) || [];
+    if (!currentDeletedFor.includes(userId)) {
+      currentDeletedFor.push(userId);
+      message.deletedFor = currentDeletedFor;
+      await message.save();
+    }
+  }
+
+  // Update conversation's lastMessage reference if needed
+  if (conversation.lastMessage) {
+    const lastMsgForUser = await Message.findOne({
+      conversation: conversationId,
+      isDeleted: false,
+      deletedFor: { $ne: userId },
+    }).sort({ createdAt: -1 });
+
+    if (!lastMsgForUser) {
+      conversation.lastMessage = null;
+      await conversation.save();
+    }
+  }
+
+  // Notify the user via socket that this conversation's messages were cleared
+  const io = getIo();
+  const socketId = getSocketId(userId);
+  if (socketId) {
+    io.to(socketId).emit("conversation-updated", {
+      conversationId: conversation._id,
+      lastMessage: null,
+    });
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { conversationId }, "Chat cleared successfully"));
 });

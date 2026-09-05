@@ -4,6 +4,7 @@ import {
   createConversation,
   getConversations,
   getConversationById,
+  deleteConversation,
   createGroup,
   updateGroupInfo,
   addGroupMember,
@@ -18,6 +19,7 @@ router.use(protect);
 router.post("/", createConversation);
 router.get("/", getConversations);
 router.get("/:id", getConversationById);
+router.delete("/:id", deleteConversation);
 
 router.post("/group", createGroup);
 router.patch("/group/:conversationId", updateGroupInfo);

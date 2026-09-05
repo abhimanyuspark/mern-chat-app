@@ -104,6 +104,30 @@ export const deleteMessages = createAsyncThunk(
   },
 );
 
+export const clearChatMessages = createAsyncThunk(
+  "chat/clearChatMessages",
+  async (conversationId, thunkAPI) => {
+    try {
+      await api.delete(`/messages/clear/${conversationId}`);
+      return { conversationId };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
+export const deleteConversationThunk = createAsyncThunk(
+  "chat/deleteConversationThunk",
+  async (conversationId, thunkAPI) => {
+    try {
+      await api.delete(`/conversations/${conversationId}`);
+      return conversationId;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
+    }
+  },
+);
+
 export const createGroup = createAsyncThunk(
   "chat/createGroup",
   async ({ name, participants }, thunkAPI) => {

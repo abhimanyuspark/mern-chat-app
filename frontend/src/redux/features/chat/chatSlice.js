@@ -7,6 +7,8 @@ import {
   sendMessage,
   fetchConversationById,
   deleteMessages,
+  clearChatMessages,
+  deleteConversationThunk,
   createGroup,
   updateGroupInfo,
   addGroupMember,
@@ -262,6 +264,37 @@ const chatSlice = createSlice({
       })
       .addCase(deleteMessages.rejected, (state, action) => {
         state.error = action.payload;
+      })
+
+      .addCase(clearChatMessages.fulfilled, (state, action) => {
+        const { conversationId } = action.payload;
+        state.messages[conversationId] = [];
+
+        const conversation = state.conversations.find(
+          (c) => c._id === conversationId,
+        );
+        if (conversation) {
+          conversation.lastMessage = null;
+        }
+        if (
+          state.activeConversation &&
+          state.activeConversation._id === conversationId
+        ) {
+          state.activeConversation.lastMessage = null;
+        }
+      })
+
+      .addCase(deleteConversationThunk.fulfilled, (state, action) => {
+        const conversationId = action.payload;
+        state.conversations = state.conversations.filter(
+          (c) => c._id !== conversationId,
+        );
+        delete state.messages[conversationId];
+
+        if (state.activeConversationId === conversationId) {
+          state.activeConversationId = null;
+          state.activeConversation = null;
+        }
       })
 
       .addCase(createGroup.pending, (state) => {

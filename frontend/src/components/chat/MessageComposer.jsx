@@ -1,20 +1,51 @@
 import React, { useState } from "react";
-import { FiSend } from "react-icons/fi";
+import { FiSend, FiSlash } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../redux/features/chat/chatThunk";
 import { setReplyingTo } from "../../redux/features/chat/chatSlice";
+import { toggleBlockUser } from "../../redux/features/auth/authThunk";
+import toast from "react-hot-toast";
 
 const MessageComposer = () => {
   const [text, setText] = useState("");
-  const { sendingMessage, activeConversationId, replyingTo } = useSelector(
-    (state) => state.chat,
-  );
+  const {
+    sendingMessage,
+    activeConversationId,
+    activeConversation,
+    replyingTo,
+  } = useSelector((state) => state.chat);
+  const { user: currentUser } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  const targetUser =
+    activeConversation && !activeConversation.isGroup
+      ? activeConversation.participants?.find(
+          (p) => (p._id || p) !== currentUser?._id,
+        )
+      : null;
+
+  const isBlocked = targetUser?._id
+    ? currentUser?.blockedUsers?.some(
+        (id) => (id._id || id)?.toString() === targetUser._id.toString(),
+      )
+    : false;
+
+  const handleUnblock = async () => {
+    if (!targetUser?._id) return;
+    try {
+      const action = await dispatch(toggleBlockUser(targetUser._id));
+      if (toggleBlockUser.fulfilled.match(action)) {
+        toast.success("User unblocked");
+      }
+    } catch (err) {
+      toast.error("Failed to unblock user");
+    }
+  };
 
   const onSubmit = (e) => {
     e.preventDefault();
 
-    if (!text.trim() || !activeConversationId) return;
+    if (!text.trim() || !activeConversationId || isBlocked) return;
 
     dispatch(
       sendMessage({
@@ -30,6 +61,24 @@ const MessageComposer = () => {
     });
   };
 
+  if (isBlocked) {
+    return (
+      <div className="border-t border-base-200 bg-base-200/50 p-4 text-center text-sm font-medium">
+        <p className="text-base-content/70 flex items-center justify-center gap-2">
+          <FiSlash size={16} className="text-error shrink-0" />
+          <span>You have blocked this user.</span>
+          <button
+            type="button"
+            onClick={handleUnblock}
+            className="text-primary underline font-bold hover:text-primary-focus ml-1 cursor-pointer"
+          >
+            Unblock
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col border-t border-base-200 bg-base-100 p-2 md:p-4">
       {replyingTo && (
@@ -38,7 +87,9 @@ const MessageComposer = () => {
             <span className="font-bold text-primary">
               Replying to {replyingTo.sender?.name || "User"}
             </span>
-            <span className="truncate opacity-70 italic">{replyingTo.text}</span>
+            <span className="truncate opacity-70 italic">
+              {replyingTo.text}
+            </span>
           </div>
           <button
             onClick={() => dispatch(setReplyingTo(null))}
@@ -50,7 +101,7 @@ const MessageComposer = () => {
           </button>
         </div>
       )}
-      
+
       <form onSubmit={onSubmit} className="flex gap-4 items-center">
         <div className="flex-1 relative">
           <input
